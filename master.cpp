@@ -71,7 +71,7 @@ int main(int argc, char ** argv){
 
     if(pid > 0){ //parent
       //douelia sto boss.cpp
-      administrate(input_path, numWorkers , bufferSize ,pip_names, pids);
+      administrate(input_path, numWorkers , bufferSize ,pip_names, pids, serverPort, serverIP);
     }
     else{ //child
       //douleia sto worker.cpp

@@ -50,7 +50,7 @@ int share_dirs(int *dpw, int ndirs, int ws){
 
 
 
-int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, int * pids){
+int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, int * pids, int servport, char * serverip){
   //SIGNAL HANDLERS MOY gia SIGINT/SIGQUIT
   struct sigaction actquit;
   sigfillset(&(actquit.sa_mask)); //otan ekteleitai o handler thelw na blockarw ta panta
@@ -89,7 +89,10 @@ int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, i
       dirsofeach[i][j] = subdirs[dirs_writ]; //to krataw gia log
       dirs_writ++;
     }
-
+    //steile dieu8unsh apo orisma ekfwnhshs
+    send_string(pipe_wfds[i].fd, serverip, bsize);
+    //steile arithmo portas
+    write(pipe_wfds[i].fd, &servport, sizeof(int));
   }//telos for gia moirasma directories
 
   std::string tool;

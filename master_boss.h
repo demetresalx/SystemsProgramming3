@@ -3,7 +3,8 @@
 
 #include <string> //EPITREPETAI EIPWTHHKE STO PIAZZA
 
-int administrate(char *, int , int , std::string *, int *);
+//teleutaia 2 orismata port ekfwnhshs kai address gia server
+int administrate(char *, int , int , std::string *, int *, int , char *);
 
 //diabase kai ektupwse apotelesmata topk
 void read_and_present_topk(int );

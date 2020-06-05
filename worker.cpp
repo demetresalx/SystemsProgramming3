@@ -127,6 +127,12 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       //std::cout << getpid() << " diabasa dir ap par " << sbuf << "\n";
       delete[] date_files; //sbhse to new poy egine
     }
+    int serverPort =0;
+    char serverIP[256];
+    receive_string(read_fd, serverIP,bsize); //pare serverIP
+    read(read_fd, &serverPort ,sizeof(int)); //pare serverPort
+    //std::cout << "Iam child and i got" << serverIP << " " << serverPort << "\n";
+
 
     //records_htable.print_contents();
     //diseases_htable.print_contents();
