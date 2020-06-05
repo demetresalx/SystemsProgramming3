@@ -1,9 +1,9 @@
 CC=g++  -std=c++11
 CFLAGS=-c -Wpedantic #-Ofast
 LDFLAGS=
-SOURCES_COMMON=
-SOURCES_MASTER=master.cpp
-OBJECTS_COMMON=
+SOURCES_COMMON=utils.cpp record.cpp
+SOURCES_MASTER=master.cpp master_boss.cpp worker.cpp record_HT.cpp cdHashTable.cpp topk.cpp bbst.cpp
+OBJECTS_COMMON=$(SOURCES_COMMON:.cpp=.o)
 OBJECTS_MASTER=$(SOURCES_MASTER:.cpp=.o)
 EXEC_MASTER=master
 
