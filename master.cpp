@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
   char serverIP[256]; // h serverIP
   int serverPort =0;
   int numWorkers=0;
-  int bufferSize=0;
+  int bufferSize=0; //megethos diabasmatos/grapsimatos apo pipes
   for (int i = 0; i < argc; i++){
     if (strcmp("-i", argv[i]) == 0){
       strcpy(input_path, argv[i + 1]); //akoloythei to path

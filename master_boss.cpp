@@ -10,8 +10,7 @@
 #include "master_boss.h"
 #include "worker.h"
 #include "utils.h"
-#include <sys/socket.h> //socket programming
-#include <netinet/in.h> //socket programming
+
 
 int glob_counter=0; //gia na perimenei oti ola ta paidia einai ok
 
