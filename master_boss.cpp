@@ -10,6 +10,8 @@
 #include "master_boss.h"
 #include "worker.h"
 #include "utils.h"
+#include <sys/socket.h> //socket programming
+#include <netinet/in.h> //socket programming
 
 int glob_counter=0; //gia na perimenei oti ola ta paidia einai ok
 
@@ -105,13 +107,15 @@ int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, i
   memset(already_read, 0, sizeof(already_read)); // arxika ola adiabasta
   memset(already_ok, 0, sizeof(already_read)); // arxika ola adiabasta
 
+  //SUMMARIES DE THA EKTYPWNEI O MASTER, KRATAW KWDIKA GIA SERVER??
+  /*
   while(kids_read < wnum){
     //arxikopoihsh se kathe loupa gia thn poll
       reset_poll_parameters(pipe_rfds, wnum);
 
     int rc = poll(pipe_rfds, wnum, 2000); //kanw poll
     if(rc == 0)
-      {;;/*std::cout << "timeout\n";*/}
+      {;;}
     else{//tsekarw poioi einai etoimoi
       for(int i=0; i<wnum; i++){
         //an einai etoimo kai den to exw ksanadiabasei
@@ -136,7 +140,7 @@ int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, i
       }//telos for gia paidia
     } //telos else gia timeout ths poll
   }//telos while
-
+  */
 
   //GIA XEIRISMO SIGCHLD
   signal(SIGCHLD, chld_hdl);

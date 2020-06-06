@@ -22,4 +22,6 @@ $(EXEC_MASTER): $(OBJECTS_COMMON) $(OBJECTS_MASTER)
 clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)
 
+#gia master programma:
 #./master -w 3 -b 128 -s serverIP -p 4056 -i ../inputs/ass3/input_dir
+#valgrind --leak-check=full ./master -w 3 -b 128 -s serverIP -p 4056 -i ../inputs/ass3/input_dir

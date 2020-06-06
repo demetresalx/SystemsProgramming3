@@ -7,6 +7,8 @@
 #include <fcntl.h> //open k flags
 #include <unistd.h> //read, write
 #include <fstream>
+#include <sys/socket.h> //socket programming
+#include <netinet/in.h> //socket programming
 #include "worker.h"
 #include "utils.h"
 #include "record.h"
@@ -132,13 +134,27 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     receive_string(read_fd, serverIP,bsize); //pare serverIP
     read(read_fd, &serverPort ,sizeof(int)); //pare serverPort
     //std::cout << "Iam child and i got" << serverIP << " " << serverPort << "\n";
-
-
     //records_htable.print_contents();
     //diseases_htable.print_contents();
     //countries_htable.print_contents();
 
-    //STELNW STO GONIO TA SUMMARY STATISTICS
+    //Paw na ftiaksw socket
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(sock < 0)
+      {printf("socket error\n");return -1;}
+    struct sockaddr_in serv_addr;
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = 0; //VAZW TO PORT 0 GIA NA PAREI TUXAIO DIA8ESIMO
+    bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    //TWRA PAW NA VRW POIO PORT NUMBER EINAI AKRIBWS
+    socklen_t len = sizeof(serv_addr);
+    getsockname(sock, (struct sockaddr *)&serv_addr, &len);
+    printf("port number %d\n", serv_addr.sin_port);
+    int port_to_send = htons(serv_addr.sin_port);
+    //STELNW STO SERVER TA SUMMARY STATISTICS
+    /*
   if(dosumms==0) //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
     for(int i=0; i<n_dirs; i++){
       write(write_fd, &(dsums[i]->nfiles), sizeof(int));
@@ -148,6 +164,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       }
       //std::cout << "\n";
     }
+    */
 
     for(int i=0; i<n_dirs; i++)
       delete dsums[i]; //ME DESTRUCTORS THS C++ OLH H DESMEUMENH KATHARIZEII, des ~directory_summary
