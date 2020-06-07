@@ -3,7 +3,6 @@
 
 //sunarthseis twn threads!
 //dokimastikh
-void * hello(void * ar){
+void hello(){
   std::cout << "i am thread " << pthread_self() << "\n";
-  return NULL;
 }

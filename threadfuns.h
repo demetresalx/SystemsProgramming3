@@ -4,6 +4,8 @@
 #include <pthread.h>
 
 //sunarthseis poy tha xrhsimopoioyn ta threads
-void * hello(void * ); //dokimastikh
+void hello(); //dokimastikh
+
+
 
 #endif
