@@ -12,10 +12,12 @@
 //grapse string se pipe me akribh tropo
 int send_string(int , char *, int );
 int send_string(int , std::string *, int );
+int send_integer(int, int*);
 
 //diabase string se pipe me akribh tropo.
 int receive_string(int, char *,int);
 int receive_string(int, std::string *,int);
+int receive_integer(int, int*);
 
 //gia na pairnw ta files h ta directories poy yparxoyn se ena path
 int extract_files(char * , int * , std::string **);

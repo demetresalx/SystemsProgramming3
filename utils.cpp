@@ -74,6 +74,13 @@ int send_string(int fd, std::string * str, int b){
 
 }
 
+//gia metafora akeraiou across the net
+int send_integer(int fd, int *in){
+  int32_t conv = htonl(*in); //sigoura 32bits
+  write(fd, &conv, sizeof(conv));
+  return 0;
+}
+
 //h aplh periptwsh me char *
 //vasismeno se Marc J. Rochkind - Advanced UNIX Programming (2004, Addison-Wesley Professional) - selida 97
 int receive_string(int fd, char * buf, int b){
@@ -145,7 +152,14 @@ int receive_string(int fd, std::string * str, int b){
   } while (nread < size); //stamata otan diabaseis to akribes megethos mhnymatos se bytes
 
   return nread;
+}
 
+//gia diavasma akeraiou from the net
+int receive_integer(int fd, int *in){
+  int32_t conv;
+  read(fd, &conv, sizeof(conv));
+  *in = ntohl(conv);
+  return 0;
 }
 
 //gia na pairnw ta files poy exoun mesa ta countries-dirs

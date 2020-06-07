@@ -172,10 +172,10 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     }
     send_string(serv_sock, "melitzana!" ,bsize); //dokimh
 
-  /*
+    /*
   if(dosumms==0) //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
     for(int i=0; i<n_dirs; i++){
-      write(write_fd, &(dsums[i]->nfiles), sizeof(int));
+      send_integer(serv_sock, &(dsums[i]->nfiles));
       //send_string(write_fd,  ,bsize)
       for(int j=0; j<dsums[i]->nfiles; j++){
         send_file_summary(write_fd, dsums[i]->nodes_per_file[j], dsums[i]->filenames[j], dsums[i]->countryname, dsums[i]->tfile_sums[j], bsize);
