@@ -2,6 +2,7 @@
 #define UTILS_H_
 
 #define PERMS 0666
+#define IO_PRM 128
 #include <poll.h> //tha xreiastei opote to kanw include edw kai mesw autou tou header ta ginetai kai auto include
 #include <string>
 #include <dirent.h> //gia DIRECTORIES
@@ -68,6 +69,8 @@ void send_file_summary(int , int ,std::string , std::string, file_summary *, int
 void receive_and_print_file_summary(int , int );
 //gia na kanw reset ta poll events
 void reset_poll_parameters(struct pollfd *, int);
+//gia na tsekarw an teleiwsan ta pending connections se ena listening socket
+int check_if_will_block(int );
 
 //OPWS STIS DIAFANEIES GIA KYKLIKO BUFFER
 class pool{

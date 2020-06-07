@@ -5,6 +5,7 @@
 #include <arpa/inet.h> //to idio
 #include <signal.h> //sigaction
 #include <string>
+#include <errno.h>
 #include "threadfuns.h" //nhmata
 #include "utils.h"
 
@@ -78,52 +79,74 @@ int main(int argc, char ** argv){
   for(int i=0; i<numThreads; i++){
     pthread_create( &tids[i], NULL, thread_basis, NULL) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
   }
-  //pame na paroume ta statistika apo tous workers
+  //Dhmiourgw 2 sockets "autia". To ena akouei sundeseis sto port gia statistika kai to allo sto port gia queries
+  //Mesw poll() tha mporw na vlepw poy dexomai sundeseis kai na tis prow8w analoga
   char buffer1[256], buffer2[256];
-  int server = socket(AF_INET, SOCK_STREAM, 0);
+  int listen_stats = socket(AF_INET, SOCK_STREAM, 0);
+  int listen_queries = socket(AF_INET, SOCK_STREAM, 0);
   struct sockaddr_in my_addr, peer_addr;
   my_addr.sin_family = AF_INET;
   my_addr.sin_addr.s_addr = INADDR_ANY;
   my_addr.sin_port = htons(statisticsPortNum);
-  bind(server, (struct sockaddr*) &my_addr, sizeof(my_addr));
-  listen(server, 10);
+  //antistoixizw to socket sthn porta gia statistics
+  bind(listen_stats, (struct sockaddr*) &my_addr, sizeof(my_addr));
+  my_addr.sin_port = htons(queryPortNum);
+  //antistoixizw to allo socket sthn porta gia queries
+  bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr));
+  //listen
+  listen(listen_stats, 10);
+  listen(listen_queries, 10);
   socklen_t addr_size;
   addr_size = sizeof(struct sockaddr_in);
   std::string tool ="";
-  struct pollfd testfd[1]; //ta read fds twn pipes poy tha mpoyn kai sthn poll
+  struct pollfd listenfds[2]; //ta read fds twn pipes poy tha mpoyn kai sthn poll
+  listenfds[0].fd = listen_stats;
+  listenfds[1].fd = listen_queries;
+  reset_poll_parameters(listenfds, 2);
+  //arxizei h leitourgia tou server poy anazhta sundeseis
+  int accepted_fd;
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
     }
     //poll???
-    int acc = accept(server, (struct sockaddr*) &peer_addr, &addr_size);
-    testfd[0].fd = acc;
-    reset_poll_parameters(testfd, 1);
-    printf("Connection Established\n");
-    int rc = poll(testfd, 1, 2000); //kanw poll
-    if(rc == 0)
+    int rc = poll(listenfds, 2, 2000);
+    if(rc == 0) //timeout
       {;;}
-    else{//tsekarw poioi einai etoimoi
-        //an einai etoimo kai den to exw ksanadiabasei
-        if(testfd[0].revents == POLLIN){
-          //pame gia ta summaries
-          int ndirs=0;
-          receive_integer(testfd[0].fd, &ndirs);
-          for(int j=0; j<ndirs; j++){
-            int nfls =0;
-            receive_integer(testfd[0].fd, &nfls);
-            std::cout << "tha diabasw size " << ndirs << " " << nfls << "\n";
-            for(int k=0; k<nfls; k++)
-              receive_and_print_file_summary(testfd[0].fd, 12); //ektupwse to summary
-          }
-
-        } //telos elegxou diathesimothtas fd
+    else{ //tsekarw poio auti exei sundesh
+        for(int i=0; i<2; i++){
+          if(listenfds[i].revents == POLLIN){ //exoume sundesh edw
+            //elegxw poio apo ta 2 einai gia na to xeiristw analoga
+            if(listenfds[i].fd == listen_stats){ //yparxei sundesh gia statistics. proceed with reading/printing tous
+              //pame na piasoume twra ola ta incoming connections gia statistics poy einai pending edw
+              do{
+                accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
+                std::cout << "New statistic connection!!\n";
+                //pame na paroume ta summary statistics apo edw
+                int ndirs=0;
+                receive_integer(accepted_fd, &ndirs);
+                for(int j=0; j<ndirs; j++){
+                  int nfls =0;
+                  receive_integer(accepted_fd, &nfls);
+                  //std::cout << "tha diabasw size " << ndirs << " " << nfls << "\n";
+                  for(int k=0; k<nfls; k++)
+                    receive_and_print_file_summary(accepted_fd, IO_PRM); //ektupwse to summary
+                }
+                if(check_if_will_block(listen_stats)) //an tis phrame oles tis sundeseis
+                  break;
+              }while(accepted_fd > 0);
+            }
+            else{ //einai o query listener
+              ;;
+            }
+          } //telos elegxou diathesimothtas fd
+        }//telos for gia ta 2 autia
     } //telos else gia timeout ths poll
     // "ntohs(peer_addr.sin_port)" function is
     // for finding port number of client
     //printf("connection established with IP : %s and PORT : %d\n", buffer1, htons(peer_addr.sin_port));
-    receive_string(acc, &tool, 12);
-    std::cout << "mageireuw: " << tool << "\n";
+    //receive_string(acc, &tool, 12);
+    //std::cout << "mageireuw: " << tool << "\n";
   }//telos while sundesewn
 
   //wait for threads to terminate

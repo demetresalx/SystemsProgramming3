@@ -494,6 +494,17 @@ void reset_poll_parameters(struct pollfd * pollfds, int length){
     pollfds[i].events = POLLIN;
 }
 
+//gia na tsekarw an teleiwsan ta pending connections se ena listening socket
+int check_if_will_block(int fd){
+  struct pollfd temp[1];
+  temp[0].fd = fd;
+  int rv= poll(temp, 1, 0); //epistrefei >0 an DEN tha blockare, 0 an tha blockare
+  if(rv >0)
+    return -1;
+  else
+    return 1; //nai tha blockare
+}
+
 //gia kykliko buffer (pool diafaneiwn)
 pool::pool(int size){
   fds = new int[size]; //oso to bufferSize tha einai auto

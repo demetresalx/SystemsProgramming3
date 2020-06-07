@@ -182,7 +182,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       //std::cout << "\n";
     }
   }
-  send_string(serv_sock, "melitzana!" ,bsize); //dokimh
+  //send_string(serv_sock, "melitzana!" ,bsize); //dokimh
 
 
     for(int i=0; i<n_dirs; i++)
