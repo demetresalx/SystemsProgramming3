@@ -67,4 +67,16 @@ void receive_and_print_file_summary(int , int );
 //gia na kanw reset ta poll events
 void reset_poll_parameters(struct pollfd *, int);
 
+//OPWS STIS DIAFANEIES GIA KYKLIKO BUFFER
+class pool{
+public:
+  int * fds; //o buffer
+  int start;
+  int end;
+  int count;
+
+  pool(int );//me megethos buffersize
+  ~pool();
+};
+
 #endif

@@ -3,7 +3,7 @@ CFLAGS=-c -Wpedantic #-Ofast
 LDFLAGS=
 SOURCES_COMMON=utils.cpp record.cpp
 SOURCES_MASTER=master.cpp master_boss.cpp worker.cpp record_HT.cpp cdHashTable.cpp topk.cpp bbst.cpp
-SOURCES_SERVER=whoServer.cpp
+SOURCES_SERVER=whoServer.cpp threadfuns.cpp
 OBJECTS_COMMON=$(SOURCES_COMMON:.cpp=.o)
 OBJECTS_MASTER=$(SOURCES_MASTER:.cpp=.o)
 OBJECTS_SERVER=$(SOURCES_SERVER:.cpp=.o)
@@ -22,7 +22,7 @@ $(EXEC_MASTER): $(OBJECTS_COMMON) $(OBJECTS_MASTER)
 	$(CC) $(LDFLAGS) $^ -o $@
 
 $(EXEC_SERVER): $(OBJECTS_COMMON) $(OBJECTS_SERVER)
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CC) $(LDFLAGS) $^ -o $@ -lpthread
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

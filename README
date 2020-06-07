@@ -14,3 +14,9 @@ Third (3rd) assignment on UNIX system programming,
 
 Το κάθε worker process στη συνέχεια δημιουργεί ενα sockaddr_in με port το 0
 ώστε να του ανατεθεί μετά ενα διαθέσιμο νούμερο πόρτας για να το στείλει στον whoServer.
+
+Ο circular buffer ειναι ΟΠΩΣ ΣΤΙΣ ΔΙΑΦΑΝΕΙΕΣ. Υπάρχει η κλάση pool(αντιστοιχη της struct pool των διαφανειών του κ. Ντούλα) που κρατάει:
+1. τον πίνακα απο fds που ζητείται
+2. το start
+3. το end
+4. το count

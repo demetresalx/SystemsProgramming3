@@ -1,7 +1,24 @@
 #include <iostream>
 #include <cstring>
+#include <signal.h> //sigaction
+#include "threadfuns.h" //nhmata
+#include "utils.h"
+
+//gia dikh moy omalh leitourgia exit sto server me CTRL-C. Den einai aparaithto kata ekfwnhsh
+int quitflag =0; //gia na kserw an tha grapsw log kai kleinw
+void quit_hdl(int signo){
+  quitflag=1; //gia na kserei sth megalh while ti tha kanei to paidi
+}
+//KOINOXRHSTES METAVLHTES GIA THREADS TOU SERVER, MUTEXES TOUS K CONDVARS!
+pool * circle; //H DOMH POOL TWN DIAFANEIWN, exei mesa to array poy eiai o kyklikos buffer kai ta start, end, count
+
 
 int main(int argc, char ** argv){
+  //de xreiazetai, aplws gia tis dokimes thelw na kanw omalo exit me SIGINT/QUIT
+  struct sigaction actquit;
+  actquit.sa_handler = quit_hdl;
+  sigaction(SIGINT, &actquit, NULL); //to orisame!
+  sigaction(SIGQUIT, &actquit, NULL); //to orisame!
   //GIA TIS PARAMETROUS APO ARGC
   int queryPortNum =0;
   int statisticsPortNum =0;
@@ -31,8 +48,20 @@ int main(int argc, char ** argv){
     bufferSize = 1;
   if(numThreads < 1) //we have AT LEAST 1 thread
     numThreads = 1;
+  //ftiaxnw ton kykliko buffer. EINAI TO POOL TWN DIAFANEIWN TOU NTOULA
+  circle = new pool(bufferSize); //to arxikopoiei me to dothen megethos
 
-  std::cout << queryPortNum << "\n";
+  //ftiaxnw numThreads nhmata
+  pthread_t * tids; //krataw ta pthreads
+  tids = new pthread_t[numThreads];
+  for(int i=0; i<numThreads; i++){
+    pthread_create( &tids[i], NULL, hello, NULL) ;
+  }
 
+  //wait for threads to terminate
+  for(int i=0; i<numThreads; i++)
+    pthread_join(tids[i], NULL);
+  delete[] tids; //svhse axrhsto pleon pinaka
+  delete circle; //destroy kykliko buffer epishs
   return 0;
 }
