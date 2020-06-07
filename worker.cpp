@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sys/socket.h> //socket programming
 #include <netinet/in.h> //socket programming
+#include <arpa/inet.h> //to idio
 #include "worker.h"
 #include "utils.h"
 #include "record.h"
@@ -138,23 +139,40 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     //diseases_htable.print_contents();
     //countries_htable.print_contents();
 
-    //Paw na ftiaksw socket
+    //Paw na ftiaksw socket gia server
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
+    serv_addr.sin_port = htons(serverPort); //Vazw to port tou orismatos Serverport
+    int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(serv_sock < 0)
+      {printf("socket error\n");return -1;}
+
+    //thelw na parw ton arithmo portas poy tha steilw ston server
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
       {printf("socket error\n");return -1;}
-    struct sockaddr_in serv_addr;
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = 0; //VAZW TO PORT 0 GIA NA PAREI TUXAIO DIA8ESIMO
-    bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    struct sockaddr_in m_addr;
+    bzero((char *) &m_addr, sizeof(m_addr));
+    m_addr.sin_family = AF_INET;
+    m_addr.sin_addr.s_addr = INADDR_ANY;
+    m_addr.sin_port = 0; //VAZW TO PORT 0 GIA NA PAREI TUXAIO DIA8ESIMO
+    bind(sock, (struct sockaddr *) &m_addr, sizeof(m_addr));
     //TWRA PAW NA VRW POIO PORT NUMBER EINAI AKRIBWS
-    socklen_t len = sizeof(serv_addr);
-    getsockname(sock, (struct sockaddr *)&serv_addr, &len);
-    printf("port number %d\n", serv_addr.sin_port);
-    int port_to_send = htons(serv_addr.sin_port);
+    socklen_t len = sizeof(m_addr);
+    getsockname(sock, (struct sockaddr *)&m_addr, &len);
+    printf("port number %d kai omorfa : %d\n", m_addr.sin_port, htons(m_addr.sin_port));
+    //printf("port number %d kai omorfa : %d\n", serv_addr.sin_port, htons(serv_addr.sin_port));
+
+    int port_to_send = htons(m_addr.sin_port);
     //STELNW STO SERVER TA SUMMARY STATISTICS
-    /*
+    if(connect(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+        printf("\nConnection Failed. Server may not be up \n");
+        return -1;
+    }
+    send_string(serv_sock, "melitzana!" ,bsize); //dokimh
+
+  /*
   if(dosumms==0) //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
     for(int i=0; i<n_dirs; i++){
       write(write_fd, &(dsums[i]->nfiles), sizeof(int));
@@ -165,6 +183,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       //std::cout << "\n";
     }
     */
+
 
     for(int i=0; i<n_dirs; i++)
       delete dsums[i]; //ME DESTRUCTORS THS C++ OLH H DESMEUMENH KATHARIZEII, des ~directory_summary

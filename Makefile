@@ -31,9 +31,9 @@ clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_SERVER) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)
 
 #gia master programma:
-#./master -w 3 -b 128 -s serverIP -p 4056 -i ../inputs/ass3/input_dir
+#./master -w 3 -b 128 -s 127.0.0.1 -p 4444 -i ../inputs/ass3/input_dir
 #valgrind --leak-check=full ./master -w 3 -b 128 -s serverIP -p 4056 -i ../inputs/ass3/input_dir
 
 #gia server programma
-#./whoServer -q 7777 -s 4056 -w 5 -b 6
+#./whoServer -q 7777 -s 4444 -w 5 -b 6
 #valgrind --leak-check=full ./whoServer -q 7777 -s 4056 -w 5 -b 6

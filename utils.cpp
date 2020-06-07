@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
+#include <arpa/inet.h>
 #include <fstream>
 #include "utils.h"
 
@@ -10,7 +11,8 @@
 int send_string(int fd, char * str, int b){
   ssize_t nwritten = 0, n;
   int size = strlen(str) +1; //to mhkos poy prepei na steilei prwta
-  int bwrit = write(fd, &size, sizeof(int));
+  int32_t conv = htonl(size); //to mhkos se UNIVERSALLY PASSABLE MORFH
+  int bwrit = write(fd, &conv, sizeof(conv));
   //stelnoyme twra to string
   //prosexw na mh grapsw perissotero ap oso xreiazetai
   //grafw b bytes kathe fora mexri na parw to mhnyma me swstous elegxous
@@ -41,10 +43,11 @@ int send_string(int fd, char * str, int b){
 int send_string(int fd, std::string * str, int b){
   ssize_t nwritten = 0, n;
   int size = str->length() +1; //to mhkos poy prepei na steilei prwta
+  int32_t conv = htonl(size); //to mhkos se UNIVERSALLY PASSABLE MORFH
   char a[size]; //gia na ginei low level I/O xreiazomai anagkastika char *
   strcpy(a, str->c_str());  //ara pernaw to std::string se ena proswrino char * kai stelnw auto
   //std::cout << *str;
-  int bwrit = write(fd, &size, sizeof(int));
+  int bwrit = write(fd, &conv, sizeof(conv));
   //stelnoyme twra to string
   //prosexw na mh grapsw perissotero ap oso xreiazetai
   //grafw b bytes kathe fora mexri na parw to mhnyma me swstous elegxous
@@ -77,8 +80,11 @@ int receive_string(int fd, char * buf, int b){
   ssize_t nread = 0, n;
   strcpy(buf, "");
   int size =0;
+  int32_t conv;
   //pare mhkos erxomenhs sumvoloseiras
-  int brd = read(fd, &size, sizeof(int));
+  int brd = read(fd, &conv, sizeof(conv));
+  //kanto twra se an8rwpinh morfh
+  size = ntohl(conv);
 
   int to_read=0;
   do {
@@ -111,8 +117,11 @@ int receive_string(int fd, std::string * str, int b){
   char tool[300];
   strcpy(tool, "");
   int size =0;
+  int32_t conv;
   //pare mhkos erxomenhs sumvoloseiras
-  int brd = read(fd, &size, sizeof(int));
+  int brd = read(fd, &conv, sizeof(conv));
+  //kanto twra se an8rwpinh morfh
+  size = ntohl(conv);
 
   int to_read=0;
   do {
