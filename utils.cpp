@@ -156,7 +156,7 @@ int receive_string(int fd, std::string * str, int b){
 
 //gia diavasma akeraiou from the net
 int receive_integer(int fd, int *in){
-  int32_t conv;
+  int32_t conv = -2;
   read(fd, &conv, sizeof(conv));
   *in = ntohl(conv);
   return 0;
@@ -362,7 +362,8 @@ int get_age_category(int age){
 
 //steile se kapoion (gonio) ta periexomena tou file summary
 void send_file_summary(int wfd, int summ_entries, std::string filename, std::string country, file_summary * fsm, int bsize){
-  write(wfd, &summ_entries, sizeof(int));
+  //write(wfd, &summ_entries, sizeof(int));
+  send_integer(wfd, &summ_entries);
   if(summ_entries == 0)
     return; //mh grapseis tipota allo
 
@@ -375,7 +376,7 @@ void send_file_summary(int wfd, int summ_entries, std::string filename, std::str
     send_string(wfd, &(currptr->diseasename), bsize);
     //grapse arithmo krousmatwn kathe kathgorias hlikiakhs
     for(int j=0; j<4; j++)
-      write(wfd, &(currptr->age_cats[j]), sizeof(int));
+      send_integer(wfd, &(currptr->age_cats[j]));
 
     currptr = currptr->next; //h parametros summ entries einai tetoia poy de tha prokalesei problhma
   }//telos for periexomena tou summary
@@ -384,7 +385,8 @@ void send_file_summary(int wfd, int summ_entries, std::string filename, std::str
 //diabase apo kapoion (paidi) ta periexomena tou summary
 void receive_and_print_file_summary(int rfd, int bsize){
   int summ_entries =0;
-  read(rfd, &summ_entries, sizeof(int));
+  //read(rfd, &summ_entries, sizeof(int));
+  receive_integer(rfd, &summ_entries);
   if(summ_entries == 0)
     return; //mhn kaneis tpt allo
 
@@ -404,13 +406,17 @@ void receive_and_print_file_summary(int rfd, int bsize){
     std::cout << dis_name << "\n";
     //diabase k deikse arithmo krousmatwn kathe kathgorias hlikiakhs
     int krousm=0;
-    read(rfd, &krousm, sizeof(int));
+    //read(rfd, &krousm, sizeof(int));
+    receive_integer(rfd, &krousm);
     std::cout << "Age range 0-20 years: " << krousm << " cases\n";
-    read(rfd, &krousm, sizeof(int));
+    //read(rfd, &krousm, sizeof(int));
+    receive_integer(rfd, &krousm);
     std::cout << "Age range 21-40 years: " << krousm << " cases\n";
-    read(rfd, &krousm, sizeof(int));
+    //read(rfd, &krousm, sizeof(int));
+    receive_integer(rfd, &krousm);
     std::cout << "Age range 41-60 years: " << krousm << " cases\n";
-    read(rfd, &krousm, sizeof(int));
+    //read(rfd, &krousm, sizeof(int));
+    receive_integer(rfd, &krousm);
     std::cout << "Age range 60+ years: " << krousm << " cases\n";
 
     //afhne kenh seira metaksu iwn opws fainetai na kanei h ekfwnhsh

@@ -90,13 +90,35 @@ int main(int argc, char ** argv){
   socklen_t addr_size;
   addr_size = sizeof(struct sockaddr_in);
   std::string tool ="";
+  struct pollfd testfd[1]; //ta read fds twn pipes poy tha mpoyn kai sthn poll
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
     }
     //poll???
     int acc = accept(server, (struct sockaddr*) &peer_addr, &addr_size);
+    testfd[0].fd = acc;
+    reset_poll_parameters(testfd, 1);
     printf("Connection Established\n");
+    int rc = poll(testfd, 1, 2000); //kanw poll
+    if(rc == 0)
+      {;;}
+    else{//tsekarw poioi einai etoimoi
+        //an einai etoimo kai den to exw ksanadiabasei
+        if(testfd[0].revents == POLLIN){
+          //pame gia ta summaries
+          int ndirs=0;
+          receive_integer(testfd[0].fd, &ndirs);
+          for(int j=0; j<ndirs; j++){
+            int nfls =0;
+            receive_integer(testfd[0].fd, &nfls);
+            std::cout << "tha diabasw size " << ndirs << " " << nfls << "\n";
+            for(int k=0; k<nfls; k++)
+              receive_and_print_file_summary(testfd[0].fd, 12); //ektupwse to summary
+          }
+
+        } //telos elegxou diathesimothtas fd
+    } //telos else gia timeout ths poll
     // "ntohs(peer_addr.sin_port)" function is
     // for finding port number of client
     //printf("connection established with IP : %s and PORT : %d\n", buffer1, htons(peer_addr.sin_port));

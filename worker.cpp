@@ -170,19 +170,19 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
         printf("\nConnection Failed. Server may not be up \n");
         return -1;
     }
-    send_string(serv_sock, "melitzana!" ,bsize); //dokimh
 
-    /*
-  if(dosumms==0) //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
+    //STELNW TA SUMMARIES STON WHOSERVER
+  if(dosumms==0){ //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
+    send_integer(serv_sock, &n_dirs);
     for(int i=0; i<n_dirs; i++){
       send_integer(serv_sock, &(dsums[i]->nfiles));
-      //send_string(write_fd,  ,bsize)
       for(int j=0; j<dsums[i]->nfiles; j++){
-        send_file_summary(write_fd, dsums[i]->nodes_per_file[j], dsums[i]->filenames[j], dsums[i]->countryname, dsums[i]->tfile_sums[j], bsize);
+        send_file_summary(serv_sock, dsums[i]->nodes_per_file[j], dsums[i]->filenames[j], dsums[i]->countryname, dsums[i]->tfile_sums[j], bsize);
       }
       //std::cout << "\n";
     }
-    */
+  }
+  send_string(serv_sock, "melitzana!" ,bsize); //dokimh
 
 
     for(int i=0; i<n_dirs; i++)
