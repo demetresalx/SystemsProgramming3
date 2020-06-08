@@ -505,18 +505,3 @@ int check_if_will_block(int fd){
   else
     return 1; //nai tha blockare
 }
-
-//gia kykliko buffer (pool diafaneiwn)
-pool::pool(int size){
-  fds = new int[size]; //oso to bufferSize tha einai auto
-  memset(fds, 0, sizeof(fds)); //gemise to me 0 arxika
-  start = 0;
-  end = -1;
-  count = 0;
-
-}
-
-//destructor
-pool::~pool(){
-  delete[] fds;
-}

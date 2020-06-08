@@ -15,11 +15,10 @@ int quitflag =0; //gia na kserw an tha grapsw log kai kleinw
 void quit_hdl(int signo){
   quitflag=1; //gia na kserei sth megalh while ti tha kanei to paidi
 }
-//KOINOXRHSTES METAVLHTES GIA THREADS TOU SERVER, MUTEXES TOUS K CONDVARS!
-pool * circle; //H DOMH POOL TWN DIAFANEIWN, exei mesa to array poy eiai o kyklikos buffer kai ta start, end, count
-pthread_mutex_t circle_lock = PTHREAD_MUTEX_INITIALIZER ;
+//KOINOXRHSTES METAVLHTES GIA THREADS TOU SERVER, MUTEXES TOUS K CONDVARS! polla einai extern gia eukolia sto grapsimo sunarthsewn, des threadfuns.h
+pool * circle; //H DOMH POOL TWN DIAFANEIWN, apoteleitai apo to array poy eiai o kyklikos buffer kai ta start, end, count. Arxikopoieitai apo to main thread
 //external klash gia sugxronismo tou stdout metaksu threads. Des threadfuns.h gia to ti kanei
-synchro_stdout  st;
+synchro_stdout  st; //des threadfuns.h & .cpp
 
 void * thread_basis(void * ar){
   pthread_exit(NULL);
@@ -112,7 +111,10 @@ int main(int argc, char ** argv){
               //pame na piasoume twra ola ta incoming connections gia statistics poy einai pending edw
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
-                std::cout << "New statistic connection!!\n";
+                std::cout << "New statistics connection!!\n";
+                char ip[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
+                std::cout << "sto " << ip << "\n";
                 //pame na paroume ta summary statistics apo edw
                 int ndirs=0;
                 receive_integer(accepted_fd, &ndirs);
@@ -133,13 +135,9 @@ int main(int argc, char ** argv){
           } //telos elegxou diathesimothtas fd
         }//telos for gia ta 2 autia
     } //telos else gia timeout ths poll
-    // "ntohs(peer_addr.sin_port)" function is
-    // for finding port number of client
-    //printf("connection established with IP : %s and PORT : %d\n", buffer1, htons(peer_addr.sin_port));
-    //receive_string(acc, &tool, 12);
-    //std::cout << "mageireuw: " << tool << "\n";
+
   }//telos while sundesewn
-  
+
 
   //wait for threads to terminate
   for(int i=0; i<numThreads; i++)
@@ -147,6 +145,5 @@ int main(int argc, char ** argv){
   delete[] tids; //svhse axrhsto pleon pinaka
   delete circle; //destroy kykliko buffer epishs
   //destroy all mutexes and condition vars
-  pthread_mutex_destroy(&circle_lock);
   return 0;
 }

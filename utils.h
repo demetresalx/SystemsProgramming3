@@ -72,16 +72,5 @@ void reset_poll_parameters(struct pollfd *, int);
 //gia na tsekarw an teleiwsan ta pending connections se ena listening socket
 int check_if_will_block(int );
 
-//OPWS STIS DIAFANEIES GIA KYKLIKO BUFFER
-class pool{
-public:
-  int * fds; //o buffer
-  int start;
-  int end;
-  int count;
-
-  pool(int );//me megethos buffersize
-  ~pool();
-};
 
 #endif
