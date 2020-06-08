@@ -21,7 +21,11 @@ pool * circle; //H DOMH POOL TWN DIAFANEIWN, apoteleitai apo to array poy eiai o
 synchro_stdout  st; //des threadfuns.h & .cpp
 
 void * thread_basis(void * ar){
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
+  while(1){
+    circle->obtain();
+    pthread_cond_signal(&(circle->nonfull));
+  }
 }
 
 
@@ -112,9 +116,14 @@ int main(int argc, char ** argv){
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
                 std::cout << "New statistics connection!!\n";
+                circle->place(accepted_fd);
+                pthread_cond_broadcast(&(circle->nonempty));
                 char ip[INET_ADDRSTRLEN];
                 inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
-                std::cout << "sto " << ip << "\n";
+                //std::cout << "sto " << ip << "\n"; ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
+                uint16_t worker_port =0;
+                read(accepted_fd, &worker_port, sizeof(worker_port));
+                std::cout << "Phra to " << ntohs(worker_port) << "\n";
                 //pame na paroume ta summary statistics apo edw
                 int ndirs=0;
                 receive_integer(accepted_fd, &ndirs);

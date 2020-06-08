@@ -46,6 +46,7 @@ int pool::obtain(){
     pthread_cond_wait(&nonempty , &lock) ;
   }
   data = fds[start];
+  printf("Eimai o %d kai tsimphsa to fd %d\n", pthread_self(), data);
   start = (start + 1) % size ;
   count--;
   pthread_mutex_unlock(&lock) ;

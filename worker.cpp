@@ -142,7 +142,8 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     //Paw na ftiaksw socket gia server
     struct sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
+    //inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
+    serv_addr.sin_addr.s_addr = inet_addr(serverIP);
     serv_addr.sin_port = htons(serverPort); //Vazw to port tou orismatos Serverport
     int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
     if(serv_sock < 0)
@@ -161,15 +162,18 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     //TWRA PAW NA VRW POIO PORT NUMBER EINAI AKRIBWS
     socklen_t len = sizeof(m_addr);
     getsockname(sock, (struct sockaddr *)&m_addr, &len);
-    printf("port number %d kai omorfa : %d\n", m_addr.sin_port, htons(m_addr.sin_port));
+    //printf("port number %d kai omorfa : %d\n", m_addr.sin_port, htons(m_addr.sin_port));
     //printf("port number %d kai omorfa : %d\n", serv_addr.sin_port, htons(serv_addr.sin_port));
 
-    int port_to_send = htons(m_addr.sin_port);
+    uint16_t port_to_send = m_addr.sin_port;
     //STELNW STO SERVER TA SUMMARY STATISTICS
     if(connect(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
         printf("\nConnection Failed. Server may not be up \n");
         return -1;
     }
+    //grafw port kai ip poy prepei ISWS PREPEI KAI IP
+    write(serv_sock, &port_to_send, sizeof(port_to_send));
+    std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
 
     //STELNW TA SUMMARIES STON WHOSERVER
   if(dosumms==0){ //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
