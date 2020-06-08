@@ -4,7 +4,6 @@
 #include <netinet/in.h> //socket programming
 #include <arpa/inet.h> //to idio
 #include <signal.h> //sigaction
-#include <string>
 #include <errno.h>
 #include <unistd.h>
 #include "threadfuns.h" //nhmata
@@ -21,7 +20,7 @@ pool * circle; //H DOMH POOL TWN DIAFANEIWN, apoteleitai apo to array poy eiai o
 synchro_stdout  st; //des threadfuns.h & .cpp
 
 void * thread_basis(void * ar){
-  //pthread_exit(NULL);
+  pthread_exit(NULL);
   while(1){
     circle->obtain();
     pthread_cond_signal(&(circle->nonfull));
@@ -33,8 +32,8 @@ int main(int argc, char ** argv){
   //de xreiazetai, aplws gia tis dokimes thelw na kanw omalo exit me SIGINT/QUIT
   struct sigaction actquit;
   actquit.sa_handler = quit_hdl;
-  //sigaction(SIGINT, &actquit, NULL); //to orisame!
-  //sigaction(SIGQUIT, &actquit, NULL); //to orisame!
+  sigaction(SIGINT, &actquit, NULL); //to orisame!
+  sigaction(SIGQUIT, &actquit, NULL); //to orisame!
   //GIA TIS PARAMETROUS APO ARGC
   int queryPortNum =0;
   int statisticsPortNum =0;
@@ -99,6 +98,7 @@ int main(int argc, char ** argv){
   //arxizei h leitourgia tou server poy anazhta sundeseis
 
   int accepted_fd;
+  worker_db wdb;
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
@@ -116,14 +116,25 @@ int main(int argc, char ** argv){
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
                 std::cout << "New statistics connection!!\n";
-                circle->place(accepted_fd);
-                pthread_cond_broadcast(&(circle->nonempty));
+                //circle->place(accepted_fd);
+                //pthread_cond_broadcast(&(circle->nonempty));
                 char ip[INET_ADDRSTRLEN];
                 inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
-                //std::cout << "sto " << ip << "\n"; ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
+                std::cout << "sto " << ip << "\n"; //ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
                 uint16_t worker_port =0;
                 read(accepted_fd, &worker_port, sizeof(worker_port));
                 std::cout << "Phra to " << ntohs(worker_port) << "\n";
+                int cntrs =0;
+                receive_integer(accepted_fd, &cntrs);
+                worker thisone;
+                thisone.port = worker_port;
+                thisone.address = std::string(ip);
+                std::string cntr;
+                for(int j=0; j<cntrs; j++){
+                  receive_string(accepted_fd, &cntr, IO_PRM ); //pare xwra
+                  thisone.add_country(cntr);
+                }
+                wdb.add_worker(thisone);
                 //pame na paroume ta summary statistics apo edw
                 int ndirs=0;
                 receive_integer(accepted_fd, &ndirs);
@@ -146,7 +157,11 @@ int main(int argc, char ** argv){
     } //telos else gia timeout ths poll
 
   }//telos while sundesewn
-
+  for(int i=0; i< wdb.n_workers; i++){
+    std::cout << "eimai o " << wdb.workers[i].address << ntohs(wdb.workers[i].port) << "\n";
+    for(int j=0; j< wdb.workers[i].n_countries; j++)
+      std::cout << wdb.workers[i].countries[j] << "\n";
+  }
 
   //wait for threads to terminate
   for(int i=0; i<numThreads; i++)

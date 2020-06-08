@@ -174,6 +174,11 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     //grafw port kai ip poy prepei ISWS PREPEI KAI IP
     write(serv_sock, &port_to_send, sizeof(port_to_send));
     std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
+    //tha grapsw kai tis xwres poy xeirizomai
+    send_integer(serv_sock, &n_dirs); //steile poses xwres
+    for(int i=0; i< n_dirs; i++){
+      send_string(serv_sock, &countries[i], bsize);
+    }
 
     //STELNW TA SUMMARIES STON WHOSERVER
   if(dosumms==0){ //an eisai paidi poy eftiakse o gonios apo sigchld mhn kaneis ksanasumms
