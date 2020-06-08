@@ -104,6 +104,7 @@ int main(int argc, char ** argv){
   listenfds[1].fd = listen_queries;
   reset_poll_parameters(listenfds, 2);
   //arxizei h leitourgia tou server poy anazhta sundeseis
+  /*
   int accepted_fd;
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
@@ -133,7 +134,7 @@ int main(int argc, char ** argv){
                     receive_and_print_file_summary(accepted_fd, IO_PRM); //ektupwse to summary
                 }
                 if(check_if_will_block(listen_stats)) //an tis phrame oles tis sundeseis
-                  break;
+                  {break;}
               }while(accepted_fd > 0);
             }
             else{ //einai o query listener
@@ -148,6 +149,7 @@ int main(int argc, char ** argv){
     //receive_string(acc, &tool, 12);
     //std::cout << "mageireuw: " << tool << "\n";
   }//telos while sundesewn
+  */
 
   //wait for threads to terminate
   for(int i=0; i<numThreads; i++)

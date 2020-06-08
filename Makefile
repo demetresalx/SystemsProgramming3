@@ -27,6 +27,12 @@ $(EXEC_SERVER): $(OBJECTS_COMMON) $(OBJECTS_SERVER)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
+runserver:
+	./$(EXEC_SERVER) -q 7777 -s 4444 -w 5 -b 6
+
+runmaster:
+	./$(EXEC_MASTER) -w 3 -b 128 -s 127.0.0.1 -p 4444 -i ../inputs/ass3/input_dir
+
 clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_SERVER) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)
 
