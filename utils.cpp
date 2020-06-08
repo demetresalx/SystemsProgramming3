@@ -518,5 +518,5 @@ pool::pool(int size){
 
 //destructor
 pool::~pool(){
-  delete fds;
+  delete[] fds;
 }

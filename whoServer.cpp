@@ -6,6 +6,7 @@
 #include <signal.h> //sigaction
 #include <string>
 #include <errno.h>
+#include <unistd.h>
 #include "threadfuns.h" //nhmata
 #include "utils.h"
 
@@ -17,22 +18,11 @@ void quit_hdl(int signo){
 //KOINOXRHSTES METAVLHTES GIA THREADS TOU SERVER, MUTEXES TOUS K CONDVARS!
 pool * circle; //H DOMH POOL TWN DIAFANEIWN, exei mesa to array poy eiai o kyklikos buffer kai ta start, end, count
 pthread_mutex_t circle_lock = PTHREAD_MUTEX_INITIALIZER ;
-//mutex, cond var kai condition gia thn ektupwsh sto stdout apo threads
-pthread_mutex_t stdout_lock = PTHREAD_MUTEX_INITIALIZER ;
-pthread_cond_t stdout_in_use = PTHREAD_COND_INITIALIZER;
-int stdout_user =0;
+//external klash gia sugxronismo tou stdout metaksu threads. Des threadfuns.h gia to ti kanei
+synchro_stdout  st;
 
 void * thread_basis(void * ar){
   pthread_exit(NULL);
-  pthread_mutex_lock(&stdout_lock);
-  while(stdout_user >0)
-    pthread_cond_wait(&stdout_in_use, &stdout_lock);
-  stdout_user =1;
-  hello();
-  stdout_user=0;
-  pthread_mutex_unlock(&stdout_lock);
-  pthread_cond_broadcast(&stdout_in_use);
-
 }
 
 
@@ -104,7 +94,7 @@ int main(int argc, char ** argv){
   listenfds[1].fd = listen_queries;
   reset_poll_parameters(listenfds, 2);
   //arxizei h leitourgia tou server poy anazhta sundeseis
-  /*
+
   int accepted_fd;
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
@@ -149,7 +139,7 @@ int main(int argc, char ** argv){
     //receive_string(acc, &tool, 12);
     //std::cout << "mageireuw: " << tool << "\n";
   }//telos while sundesewn
-  */
+  
 
   //wait for threads to terminate
   for(int i=0; i<numThreads; i++)
@@ -157,6 +147,6 @@ int main(int argc, char ** argv){
   delete[] tids; //svhse axrhsto pleon pinaka
   delete circle; //destroy kykliko buffer epishs
   //destroy all mutexes and condition vars
-  pthread_cond_destroy(&stdout_in_use); pthread_mutex_destroy(&stdout_lock);
+  pthread_mutex_destroy(&circle_lock);
   return 0;
 }
