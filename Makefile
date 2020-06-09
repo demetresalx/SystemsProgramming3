@@ -28,7 +28,7 @@ $(EXEC_SERVER): $(OBJECTS_COMMON) $(OBJECTS_SERVER)
 	$(CC) $(CFLAGS) $< -o $@
 
 runserver:
-	./$(EXEC_SERVER) -q 7777 -s 4444 -w 5 -b 2
+	./$(EXEC_SERVER) -q 7777 -s 4444 -w 5 -b 7
 
 runmaster:
 	./$(EXEC_MASTER) -w 3 -b 128 -s 192.168.1.1 -p 4444 -i ../inputs/ass3/input_dir
