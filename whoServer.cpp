@@ -19,7 +19,7 @@ pool * circle; //H DOMH POOL TWN DIAFANEIWN, apoteleitai apo to array poy eiai o
 //external klash gia sugxronismo tou stdout metaksu threads. Des threadfuns.h gia to ti kanei
 synchro_stdout  st; //des threadfuns.h & .cpp
 //external klash gia na krataw metadata gia tous workers kai na kserw ws thread ti na prow8hsw se poion kai se poia porta ktl...
-worker_db * work_db;
+worker_db * work_db; //tha akoloy8h8ei readers-writers politikh gia thn prospelash-enhmerwsh ths klashs apo ta threads
 
 void * thread_basis(void * ar){
   pthread_exit(NULL);
@@ -120,10 +120,10 @@ int main(int argc, char ** argv){
                 std::cout << "New statistics connection!!\n";
                 circle->place(accepted_fd);
                 pthread_cond_broadcast(&(circle->nonempty));
-                char ip[INET_ADDRSTRLEN];
-                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
-                std::cout << "sto " << ip << "\n"; //ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
-                work_db->extract_worker(accepted_fd, ip);
+                //char ip[INET_ADDRSTRLEN];
+                //inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
+                //std::cout << "sto " << ip << "\n"; //ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
+                work_db->extract_worker(accepted_fd);
                 //pame na paroume ta summary statistics apo edw
                 int ndirs=0;
                 receive_integer(accepted_fd, &ndirs);
@@ -146,11 +146,13 @@ int main(int argc, char ** argv){
     } //telos else gia timeout ths poll
 
   }//telos while sundesewn
+  /*
   for(int i=0; i< work_db->n_workers; i++){
     std::cout << "eimai o " <<  work_db->workers[i].address << ntohs( work_db->workers[i].port) << "\n";
     for(int j=0; j<  work_db->workers[i].n_countries; j++)
       std::cout <<  work_db->workers[i].countries[j] << "\n";
   }
+  */
 
   //wait for threads to terminate
   for(int i=0; i<numThreads; i++)

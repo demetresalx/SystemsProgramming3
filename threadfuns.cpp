@@ -114,10 +114,23 @@ void worker::add_country(std::string cntry ){
 }
 
 //gia thn klash poy krataei workers kai th vlepoyn ta threads
+worker_db::worker_db(){
+  n_workers =0;
+  workers = NULL;
+  readers =0;
+  writer = false;
+  lock = PTHREAD_MUTEX_INITIALIZER;
+  readcond = PTHREAD_COND_INITIALIZER;
+  writecond = PTHREAD_COND_INITIALIZER;
+}
+
 worker_db::~worker_db(){
   for(int i=0; i< n_workers; i++)
     delete[] workers[i].countries;
   delete[] workers;
+  pthread_cond_destroy(&readcond);
+  pthread_cond_destroy(&writecond);
+  pthread_mutex_destroy(&lock);
 }
 
 void worker_db::add_worker(worker wrkr){
@@ -130,15 +143,17 @@ void worker_db::add_worker(worker wrkr){
   workers = newworkers;
 }
 
-void worker_db::extract_worker(int sfd, char * addr){
+void worker_db::extract_worker(int sfd){
   uint16_t worker_port =0;
   read(sfd, &worker_port, sizeof(worker_port));
-  std::cout << "Phra to " << ntohs(worker_port) << "\n";
+  char ip[256];
+  receive_string(sfd, ip, IO_PRM);
+  //std::cout << "Phra to " << ntohs(worker_port) << " " << ip <<"\n";
   int cntrs =0;
   receive_integer(sfd, &cntrs);
   worker thisone;
   thisone.port = worker_port;
-  thisone.address = std::string(addr);
+  thisone.address = std::string(ip);
   std::string cntr;
   for(int j=0; j<cntrs; j++){
     receive_string(sfd, &cntr, IO_PRM ); //pare xwra

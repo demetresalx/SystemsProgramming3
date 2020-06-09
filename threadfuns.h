@@ -59,15 +59,22 @@ public:
   void add_country(std::string ); //prosthetei xwra kanontas resize to antistoixo buffer
 };
 //klash poy sugkentrwnei antikeimena san to parapanw. tha einai xrhsimh gia na kseroume poy prepei na phgainoyn ta erwthmata
+//tha akoloy8h8ei readers-writers politikh gia thn prospelash-enhmerwsh ths klashs
 class worker_db{
 public:
   int n_workers;
   worker * workers;
 
-  worker_db(){n_workers =0; workers=NULL;};
+  pthread_mutex_t lock; //mutex gia ton kykliko buffer
+  pthread_cond_t readcond; //condtion var gia diabasma ths domhs. diafaneies ntoula readers writers
+  pthread_cond_t writecond; //condition var gia writer. diafaneies ntoula readers writers
+  int readers;
+  bool writer;
+
+  worker_db();
   ~worker_db();
   void add_worker(worker ); //prosthetei worker kanontas to swsto resize
-  void extract_worker(int, char * ); //diabazei apo fd stoixeia enos worker
+  void extract_worker(int ); //diabazei apo fd stoixeia enos worker
 };
 
 extern synchro_stdout st ;//gia xrhsh apo threads

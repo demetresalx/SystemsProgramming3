@@ -7,6 +7,7 @@
 #include <fcntl.h> //open k flags
 #include <unistd.h> //read, write
 #include <fstream>
+#include <netdb.h>
 #include <sys/socket.h> //socket programming
 #include <netinet/in.h> //socket programming
 #include <arpa/inet.h> //to idio
@@ -173,7 +174,20 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     }
     //grafw port kai ip poy prepei ISWS PREPEI KAI IP
     write(serv_sock, &port_to_send, sizeof(port_to_send));
-    std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
+    //std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
+    //grafw IP
+    char hostbuffer[256];
+    char *IPbuffer;
+    struct hostent *host_entry;
+    int hostname;
+    // To retrieve hostname
+    hostname = gethostname(hostbuffer, sizeof(hostbuffer));
+    // To retrieve host information
+    host_entry = gethostbyname(hostbuffer);
+    IPbuffer = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+    //printf("Hostname: %s\n", hostbuffer);
+    //printf("Host IP: %s\n", IPbuffer);
+    send_string(serv_sock, IPbuffer, bsize); //stelnw thn ip moy
     //tha grapsw kai tis xwres poy xeirizomai
     send_integer(serv_sock, &n_dirs); //steile poses xwres
     for(int i=0; i< n_dirs; i++){
