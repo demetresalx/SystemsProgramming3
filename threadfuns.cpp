@@ -18,7 +18,7 @@ void hello(){
 //GIA KYKLIKO BUFFER DIAFANEIWN KOU. NTOULA
 //constructor p kanei initialize
 pool::pool(int sz){
-  fds = new int[sz]; //oso to bufferSize tha einai auto
+  fds = new tuple[sz]; //oso to bufferSize tha einai auto
   //memset(fds, 0, sizeof(fds)); //gemise to me 0 arxika
   start = 0;
   end = -1;
@@ -29,7 +29,7 @@ pool::pool(int sz){
   nonfull = PTHREAD_COND_INITIALIZER;
 }
 //akoloy8ei logikh diafaneiwn kou. Ntoula se producers consumers
-void pool::place(int fd){
+void pool::place(tuple fd){
   pthread_mutex_lock(&lock) ;
   while(count >= size){
     //printf(">> Found Buffer Full \n");
@@ -41,8 +41,8 @@ void pool::place(int fd){
   pthread_mutex_unlock(&lock) ;
 }//telos sunarthshs
 
-int pool::obtain(){
-  int data = 0;
+tuple pool::obtain(){
+  tuple data;
   pthread_mutex_lock(&lock) ;
   while(count <= 0){
     //printf (">> Found Buffer Empty\n");
@@ -52,6 +52,7 @@ int pool::obtain(){
   //printf("Eimai o %d kai tsimphsa to fd %d\n", pthread_self(), data);
   start = (start + 1) % size ;
   count--;
+  std::cout << "eimai o " << pthread_self() << " phra" << data.fd << data.type << "\n";
   pthread_mutex_unlock(&lock) ;
   return data ;
 }
@@ -143,6 +144,7 @@ void worker_db::add_worker(worker wrkr){
   workers = newworkers;
 }
 
+//sthn arxh diabasmatos apo statistics port enhmerwnei th domh metadata gia workers
 void worker_db::extract_worker(int sfd){
   uint16_t worker_port =0;
   read(sfd, &worker_port, sizeof(worker_port));
@@ -160,4 +162,40 @@ void worker_db::extract_worker(int sfd){
     thisone.add_country(cntr);
   }
   add_worker(thisone);
+}
+
+//OI PARAKATW 4 METHODOI GIA DIABASMA K enhmerwsh THS WORKER_DB EINAI BASISMENA STO READERS/WRITER TWN DIAFANEIWN
+//thelw na grapsw kati sth domh worker_db, gia na mpw se critical section
+void worker_db::cs_writer_start(){
+  pthread_mutex_lock(&lock);
+  while(readers >0 || writer)
+    pthread_cond_wait(&writecond, &lock);
+  writer = true;
+  pthread_mutex_unlock(&lock);
+  //arxise to critcal section gia enhmerwsh ths classhs
+}
+//eksodos apo CS writer
+void worker_db::cs_writer_end(){
+  pthread_mutex_lock(&lock);
+  writer = false;
+  pthread_cond_broadcast(&readcond);
+  pthread_cond_signal(&writecond);
+  pthread_mutex_unlock(&lock);
+}
+//eisodos se CS gia reader apo thn klash
+void worker_db::cs_reader_start(){
+  pthread_mutex_lock(&lock);
+  while(writer)
+    pthread_cond_wait(&readcond, &lock);
+  readers++ ;
+  pthread_mutex_unlock(&lock);
+  //arxise critical section gia diabasma apo thn classh
+}
+//eksodos apo CS gia reader
+void worker_db::cs_reader_end(){
+  pthread_mutex_lock(&lock);
+  readers-- ;
+  if(readers == 0)
+    pthread_cond_signal(&writecond); //broadcast xwris if??
+  pthread_mutex_unlock(&lock);
 }

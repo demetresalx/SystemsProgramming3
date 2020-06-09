@@ -21,9 +21,19 @@ public:
 };
 
 //OPWS STIS DIAFANEIES GIA KYKLIKO BUFFER
+class tuple{
+public:
+  int fd; //o file descriptor
+  std::string type; //ti eidous fd einai
+  void operator = (tuple const &obj){
+    fd = obj.fd;
+    type = obj.type;
+  }
+};
+
 class pool{
 public:
-  int * fds; //o buffer me tous file descriptors
+  tuple * fds; //o buffer me tous file descriptors
   int size;
   int start;
   int end;
@@ -35,8 +45,8 @@ public:
 
   pool(int );//me megethos buffersize
   ~pool();
-  void place(int ); //topo8ethse enan descriptor ston kykliko buffer
-  int obtain(); //pare enan descriptor apo ton kykliko buffer
+  void place(tuple ); //topo8ethse enan descriptor ston kykliko buffer
+  tuple obtain(); //pare enan descriptor apo ton kykliko buffer
 };
 
 //kratame pragmata apo ta statistics poy pairnoyme opws ip, porta, xwres
@@ -75,6 +85,11 @@ public:
   ~worker_db();
   void add_worker(worker ); //prosthetei worker kanontas to swsto resize
   void extract_worker(int ); //diabazei apo fd stoixeia enos worker
+  //gia eisodo-eksodo apo critical section.
+  void cs_writer_start();
+  void cs_writer_end();
+  void cs_reader_start();
+  void cs_reader_end();
 };
 
 extern synchro_stdout st ;//gia xrhsh apo threads
