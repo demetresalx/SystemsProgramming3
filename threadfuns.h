@@ -67,9 +67,12 @@ public:
   worker_db(){n_workers =0; workers=NULL;};
   ~worker_db();
   void add_worker(worker ); //prosthetei worker kanontas to swsto resize
+  void extract_worker(int, char * ); //diabazei apo fd stoixeia enos worker
 };
 
 extern synchro_stdout st ;//gia xrhsh apo threads
 //gia kykliko buffer
 extern pool * circle;
+//gia metadata workers
+extern worker_db * work_db;
 #endif

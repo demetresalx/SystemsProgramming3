@@ -18,6 +18,8 @@ void quit_hdl(int signo){
 pool * circle; //H DOMH POOL TWN DIAFANEIWN, apoteleitai apo to array poy eiai o kyklikos buffer kai ta start, end, count. Arxikopoieitai apo to main thread
 //external klash gia sugxronismo tou stdout metaksu threads. Des threadfuns.h gia to ti kanei
 synchro_stdout  st; //des threadfuns.h & .cpp
+//external klash gia na krataw metadata gia tous workers kai na kserw ws thread ti na prow8hsw se poion kai se poia porta ktl...
+worker_db * work_db;
 
 void * thread_basis(void * ar){
   pthread_exit(NULL);
@@ -65,6 +67,7 @@ int main(int argc, char ** argv){
     numThreads = 1;
   //ftiaxnw ton kykliko buffer. EINAI TO POOL TWN DIAFANEIWN TOU NTOULA
   circle = new pool(bufferSize); //to arxikopoiei me to dothen megethos
+  work_db = new worker_db; //to arxikopoiei
   //ftiaxnw numThreads nhmata
   pthread_t * tids; //krataw ta pthreads
   tids = new pthread_t[numThreads];
@@ -98,7 +101,6 @@ int main(int argc, char ** argv){
   //arxizei h leitourgia tou server poy anazhta sundeseis
 
   int accepted_fd;
-  worker_db wdb;
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
@@ -116,25 +118,12 @@ int main(int argc, char ** argv){
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
                 std::cout << "New statistics connection!!\n";
-                //circle->place(accepted_fd);
-                //pthread_cond_broadcast(&(circle->nonempty));
+                circle->place(accepted_fd);
+                pthread_cond_broadcast(&(circle->nonempty));
                 char ip[INET_ADDRSTRLEN];
                 inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
                 std::cout << "sto " << ip << "\n"; //ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
-                uint16_t worker_port =0;
-                read(accepted_fd, &worker_port, sizeof(worker_port));
-                std::cout << "Phra to " << ntohs(worker_port) << "\n";
-                int cntrs =0;
-                receive_integer(accepted_fd, &cntrs);
-                worker thisone;
-                thisone.port = worker_port;
-                thisone.address = std::string(ip);
-                std::string cntr;
-                for(int j=0; j<cntrs; j++){
-                  receive_string(accepted_fd, &cntr, IO_PRM ); //pare xwra
-                  thisone.add_country(cntr);
-                }
-                wdb.add_worker(thisone);
+                work_db->extract_worker(accepted_fd, ip);
                 //pame na paroume ta summary statistics apo edw
                 int ndirs=0;
                 receive_integer(accepted_fd, &ndirs);
@@ -157,10 +146,10 @@ int main(int argc, char ** argv){
     } //telos else gia timeout ths poll
 
   }//telos while sundesewn
-  for(int i=0; i< wdb.n_workers; i++){
-    std::cout << "eimai o " << wdb.workers[i].address << ntohs(wdb.workers[i].port) << "\n";
-    for(int j=0; j< wdb.workers[i].n_countries; j++)
-      std::cout << wdb.workers[i].countries[j] << "\n";
+  for(int i=0; i< work_db->n_workers; i++){
+    std::cout << "eimai o " <<  work_db->workers[i].address << ntohs( work_db->workers[i].port) << "\n";
+    for(int j=0; j<  work_db->workers[i].n_countries; j++)
+      std::cout <<  work_db->workers[i].countries[j] << "\n";
   }
 
   //wait for threads to terminate
@@ -168,6 +157,7 @@ int main(int argc, char ** argv){
     pthread_join(tids[i], NULL);
   delete[] tids; //svhse axrhsto pleon pinaka
   delete circle; //destroy kykliko buffer epishs
+  delete work_db; //destroy metadata workers
   //destroy all mutexes and condition vars
   return 0;
 }

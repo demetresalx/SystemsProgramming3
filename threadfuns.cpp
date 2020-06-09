@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
+#include <unistd.h>
+#include <arpa/inet.h>
 #include "threadfuns.h"
+#include "utils.h"
 
 //sunarthseis twn threads!
 //dokimastikh
@@ -125,4 +128,21 @@ void worker_db::add_worker(worker wrkr){
   n_workers++;
   delete[] workers;
   workers = newworkers;
+}
+
+void worker_db::extract_worker(int sfd, char * addr){
+  uint16_t worker_port =0;
+  read(sfd, &worker_port, sizeof(worker_port));
+  std::cout << "Phra to " << ntohs(worker_port) << "\n";
+  int cntrs =0;
+  receive_integer(sfd, &cntrs);
+  worker thisone;
+  thisone.port = worker_port;
+  thisone.address = std::string(addr);
+  std::string cntr;
+  for(int j=0; j<cntrs; j++){
+    receive_string(sfd, &cntr, IO_PRM ); //pare xwra
+    thisone.add_country(cntr);
+  }
+  add_worker(thisone);
 }
