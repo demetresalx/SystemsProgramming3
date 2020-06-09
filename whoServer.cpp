@@ -31,6 +31,17 @@ void * thread_basis(void * ar){
       work_db->cs_writer_start();
       work_db->extract_worker(got.fd);
       work_db->cs_writer_end();
+      //diabazw & ektypwnw ta statistics!
+      //xrhsimopoiw to synchro_stdout poy eftiaksa gia na mh mpleketai to stdout outpu
+      int ndirs=0;
+      receive_integer(got.fd, &ndirs);
+      for(int j=0; j<ndirs; j++){
+        int nfls =0;
+        receive_integer(got.fd, &nfls);
+        //std::cout << "tha diabasw size " << ndirs << " " << nfls << "\n";
+        for(int k=0; k<nfls; k++)
+          {st.cs_start();receive_and_print_file_summary(got.fd, IO_PRM);st.cs_end();} //ektupwse to summary
+      }
     }//telos if statistics
   }//telos while atermonhs??
 }//telos thread_basis

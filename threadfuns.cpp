@@ -52,7 +52,7 @@ tuple pool::obtain(){
   //printf("Eimai o %d kai tsimphsa to fd %d\n", pthread_self(), data);
   start = (start + 1) % size ;
   count--;
-  std::cout << "eimai o " << pthread_self() << " phra" << data.fd << data.type << "\n";
+  //std::cout << "eimai o " << pthread_self() << " phra" << data.fd << data.type << "\n";
   pthread_mutex_unlock(&lock) ;
   return data ;
 }
