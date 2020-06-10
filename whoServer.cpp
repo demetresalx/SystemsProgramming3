@@ -158,8 +158,9 @@ int main(int argc, char ** argv){
                   {break;}
               }while(accepted_fd > 0);
             }
-            else{ //einai o query listener
-              ;;
+            else if(listenfds[i].fd == listen_queries){ //einai o query listener
+              accepted_fd = accept(listen_queries, (struct sockaddr*) &peer_addr, &addr_size);
+              std::cout << "New queries connection!!\n";
             }
           } //telos elegxou diathesimothtas fd
         }//telos for gia ta 2 autia
