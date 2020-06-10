@@ -154,7 +154,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
       {printf("socket error\n");return -1;}
-    struct sockaddr_in m_addr;
+    struct sockaddr_in m_addr, peer_addr;
     bzero((char *) &m_addr, sizeof(m_addr));
     m_addr.sin_family = AF_INET;
     m_addr.sin_addr.s_addr = INADDR_ANY;
@@ -220,18 +220,25 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
   strcpy(sbuf2, "");
   std::string tool;
 
-  //arxizw na pairnw entols xrhsth
+  //PAME NA PAROUME SUNDESEIS TWRA (perimenw queries)!!
   int successful = 0; //epituxh erwthmata
   int failed = 0; //apotuxhmena erwthmata
+  int accepted_fd;
+  socklen_t addr_size = sizeof(struct sockaddr_in);
+  listen(sock, 10);
+  std::cout << "Listening for queries!!\n";
   while(1){
 
     if(quitflag1 > 0) //fagame SIGINT/QUIT
       {/*std::cout << "ciao\n";*/break;}
-
-    int rdb = receive_string(read_fd, &tool, bsize);
+    //dexomai mia sundesh gia queries
+    accepted_fd = accept(sock, (struct sockaddr*) &peer_addr, &addr_size);
+    if(accepted_fd < 0)
+      {perror("Accept:"); return-1;}
+    int rdb = receive_string(accepted_fd, &tool, bsize);
     while(tool == ""){
 
-      rdb = receive_string(read_fd, &tool, bsize);
+      rdb = receive_string(accepted_fd, &tool, bsize);
     }
 
     if(quitflag1 > 0) //fagame SIGINT/QUIT
@@ -246,42 +253,42 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     }
     else if(tool == "/diseaseFrequency1"){ //xwris orisma country
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       int number_to_present = diseases_htable.total_recs_for_cat(dis_name, date1, date2);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(write_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
       successful++;//epituxia
     }//telos if diseaseFrequency1
     else if(tool == "/diseaseFrequency2"){ //ME orisma country
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       std::string country;
-      rdb = receive_string(read_fd, &country, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.total_recs_for_cat(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(write_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos if diseaseFrequency2
     else if(tool == "/listCountries"){
-      write(write_fd, &n_dirs, sizeof(int)); //stelnw sto gonio poses xwres tha exw
+      write(accepted_fd, &n_dirs, sizeof(int)); //stelnw sto gonio poses xwres tha exw
       for(int i=0; i<n_dirs; i++){
         std::string countryandme = countries[i] + " " + std::to_string(getpid());
-        send_string(write_fd, &countryandme, bsize);
+        send_string(accepted_fd, &countryandme, bsize);
       }
       successful++;//epituxia
     }//telos if listCountries
     else if(tool == "/searchPatientRecord"){
       std::string id_to_look_for = "";
       record * recptr = NULL; //gia ton entopismo eggrafhs
-      rdb = receive_string(read_fd, &id_to_look_for, bsize); //diabase to zhtoumeno id
+      rdb = receive_string(accepted_fd, &id_to_look_for, bsize); //diabase to zhtoumeno id
       recptr = records_htable.searchPatientRecord(id_to_look_for); //psaksto
       if(recptr != NULL){ //an to brhke
         std::string requested_rec = "";
@@ -289,87 +296,87 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
           requested_rec = recptr->get_recordID() + " " + recptr->get_patientFirstName() + " " + recptr->get_patientLastName() + " " + recptr->get_diseaseID() + " " + std::to_string(recptr->get_age()) + " " + recptr->get_entryDate() + " --" ;
         else //exei kanoniko exitdate
           requested_rec = recptr->get_recordID() + " " + recptr->get_patientFirstName() + " " + recptr->get_patientLastName() + " " + recptr->get_diseaseID() + " " + std::to_string(recptr->get_age()) + " " + recptr->get_entryDate() + " " + recptr->get_exitDate() ;
-        send_string(write_fd, &requested_rec, bsize); //grapsto
+        send_string(accepted_fd, &requested_rec, bsize); //grapsto
       }
       else //den to brhke
-        send_string(write_fd, "nope", bsize); //grapse oti de brhkes tpt
+        send_string(accepted_fd, "nope", bsize); //grapse oti de brhkes tpt
       successful++;//epituxia
     }//telos if searchPatientRecord
     else if(tool == "/topk-AgeRanges"){
       int kapa = 0;
-      read(read_fd, &kapa, sizeof(int)); //pare timh k
+      read(accepted_fd, &kapa, sizeof(int)); //pare timh k
       std::string country;
-      rdb = receive_string(read_fd, &country, bsize); //pare country
+      rdb = receive_string(accepted_fd, &country, bsize); //pare country
       std::string disease;
-      rdb = receive_string(read_fd, &disease, bsize); //pare disease
+      rdb = receive_string(accepted_fd, &disease, bsize); //pare disease
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       int fetched=0;
       int * resul_arr = new int[kapa]; //me boh8aei na perasw ston patera ta apotelesmata
       float * fresul_arr = new float[kapa]; //gia ta pososta
       countries_htable.topk_age_ranges(kapa, country, disease, date1, date2, &fetched, resul_arr, fresul_arr);
-      deliver_topk(write_fd, fetched, resul_arr, fresul_arr); //steile apotelesmata ston patera
+      deliver_topk(accepted_fd, fetched, resul_arr, fresul_arr); //steile apotelesmata ston patera
       delete[] resul_arr;
       delete[] fresul_arr;
     }//telos topk
     else if(tool == "/numPatientAdmissions1"){ //xwris country
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       int * country_admissions = new int[n_dirs];
       for(int i=0; i<n_dirs; i++)//bres gia auth th xwra
         country_admissions[i] = diseases_htable.admissions(dis_name, date1, date2, countries[i]);
       //ta stelnw ektos loop gia na mhn ka8usteroun oi workers kai na douleuoun aneksarthta
-      deliver_num_adms_disch1(write_fd, n_dirs, countries, country_admissions , bsize);
+      deliver_num_adms_disch1(accepted_fd, n_dirs, countries, country_admissions , bsize);
       delete[] country_admissions;
       successful++;//epituxia
     }//telos numPatientAdmissions1
     else if(tool == "/numPatientAdmissions2"){
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       std::string country;
-      rdb = receive_string(read_fd, &country, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.admissions(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(write_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos numPatientAdmissions2
     else if(tool == "/numPatientDischarges1"){ //xwris country
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       int * country_disch = new int[n_dirs];
       for(int i=0; i<n_dirs; i++)//bres gia auth th xwra
         country_disch[i] = diseases_htable.discharges(dis_name, date1, date2, countries[i]);
       //ta stelnw ektos loop gia na mhn ka8usteroun oi workers kai na douleuoun aneksarthta
-      deliver_num_adms_disch1(write_fd, n_dirs, countries, country_disch , bsize);
+      deliver_num_adms_disch1(accepted_fd, n_dirs, countries, country_disch , bsize);
       delete[] country_disch;
       successful++;//epituxia
     }//telos numPatientDischarges1
     else if(tool == "/numPatientDischarges2"){
       std::string dis_name;
-      rdb = receive_string(read_fd, &dis_name, bsize); //diabase astheneia
+      rdb = receive_string(accepted_fd, &dis_name, bsize); //diabase astheneia
       std::string date1;
-      rdb = receive_string(read_fd, &date1, bsize); //diabase date1
+      rdb = receive_string(accepted_fd, &date1, bsize); //diabase date1
       std::string date2;
-      rdb = receive_string(read_fd, &date2, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       std::string country;
-      rdb = receive_string(read_fd, &country, bsize); //diabase date2
+      rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.discharges(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(write_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos numPatientDischarges2
     else{
@@ -378,6 +385,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
 
     if(quitflag1 > 0) //fagame SIGINT/QUIT
       {/*std::cout << "ciao\n";*/break;}
+    close(accepted_fd);
 
   }
 

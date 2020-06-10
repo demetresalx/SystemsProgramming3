@@ -43,6 +43,9 @@ void * thread_basis(void * ar){
           {st.cs_start();receive_and_print_file_summary(got.fd, IO_PRM);st.cs_end();} //ektupwse to summary
       }
     }//telos if statistics
+    else if(got.type == "query"){ //phrame sundesh apo client kai periexei erwthma
+      ;;
+    }
   }//telos while atermonhs??
 }//telos thread_basis
 
