@@ -42,7 +42,7 @@ runmaster:
 	./$(EXEC_MASTER) -w 3 -b 128 -s 192.168.1.1 -p 4444 -i ../inputs/ass3/input_dir
 
 runclient:
-	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile -w 3 -sip 192.168.1.1 -sp 7777
+	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile.txt -w 3 -sip 192.168.1.1 -sp 7777
 
 clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)

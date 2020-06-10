@@ -2,6 +2,31 @@
 #include <fstream>
 #include <string>
 #include <string.h>
+#include <pthread.h>
+#include <stdlib.h>
+
+pthread_cond_t got_line_cnd = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t got_line_mtx = PTHREAD_MUTEX_INITIALIZER;
+bool got_line = false;
+
+pthread_cond_t at_once_cnd = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t at_once_mtx = PTHREAD_MUTEX_INITIALIZER;
+bool at_once = false;
+
+void * threadcl(void * arln){
+  std::string ma = *((std::string *) arln); //phra th grammh moy
+  std::cout << ma << "\n";
+  //eidopoiw main thread na sunexisei diabasma arxeiou
+  got_line = true;
+  pthread_cond_signal(&got_line_cnd);
+  //twra perimenw mexri o main na ftiaksei ola ta threads kai na mas dwsei to ok na fugoume ola mazi!
+  pthread_mutex_lock(&at_once_mtx);
+  while(!at_once)
+    pthread_cond_wait(&at_once_cnd, &at_once_mtx);
+  pthread_mutex_unlock(&at_once_mtx);
+
+  pthread_exit(NULL);
+}
 
 int main(int argc, char ** argv){
   //GIA TIS PARAMETROUS APO ARGC
@@ -35,10 +60,25 @@ int main(int argc, char ** argv){
   std::ifstream infile(queryFile); //diabasma apo tis grammes tou arxeiou
   std::string line; //EPITREPETAI H STRING EIPAN STO PIAZZA
   int lines = 0;
+  pthread_t * tids = NULL; //krataw ta pthreads
   while (std::getline(infile, line)){ //read file
+    //std::cout << line;
     //stelnw th grammh sto thread poy ftiaxnw kai kanei ekei to sanitizing/elegxo
-
+    tids = (pthread_t *) realloc(tids, (lines+1)*sizeof(pthread_t)); //gia neo thread proekteinw ton pinaka
+    pthread_create( &(tids[lines]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
+    lines++;
+    while(!got_line)
+      pthread_cond_wait(&got_line_cnd, &got_line_mtx);
+    got_line = false;
   }//telos while read file
+  //TA KSEKINAW OLA MAZI
+  at_once = true;
+  pthread_cond_broadcast(&at_once_cnd);
 
+  //wait for threads to finish
+  for(int i=0; i<lines; i++)
+    pthread_join(tids[i], NULL);
+
+  free(tids);
   return 0;
 }
