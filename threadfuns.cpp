@@ -148,8 +148,6 @@ void worker_db::add_worker(worker wrkr){
 void worker_db::extract_worker(tuple sfd){
   uint16_t worker_port =0;
   read(sfd.fd, &worker_port, sizeof(worker_port));
-  char ip[256];
-  receive_string(sfd.fd, ip, IO_PRM);
   //std::cout << "Phra to " << ntohs(worker_port) << " " << ip <<"\n";
   int cntrs =0;
   receive_integer(sfd.fd, &cntrs);

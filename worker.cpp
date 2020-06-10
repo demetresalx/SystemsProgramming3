@@ -176,6 +176,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     write(serv_sock, &port_to_send, sizeof(port_to_send));
     //std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
     //grafw IP
+    /*
     char hostbuffer[256];
     char *IPbuffer;
     struct hostent *host_entry;
@@ -188,6 +189,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     //printf("Hostname: %s\n", hostbuffer);
     //printf("Host IP: %s\n", IPbuffer);
     send_string(serv_sock, IPbuffer, bsize); //stelnw thn ip moy
+    */
     //tha grapsw kai tis xwres poy xeirizomai
     send_integer(serv_sock, &n_dirs); //steile poses xwres
     for(int i=0; i< n_dirs; i++){

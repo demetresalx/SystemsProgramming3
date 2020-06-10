@@ -118,7 +118,7 @@ int main(int argc, char ** argv){
   //arxizei h leitourgia tou server poy anazhta sundeseis
 
   int accepted_fd;
-  std::cout << "Polling!!\n";
+  std::cout << "Listening!!\n";
   while(1){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
@@ -136,10 +136,11 @@ int main(int argc, char ** argv){
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
                 std::cout << "New statistics connection!!\n";
-                //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
+                //pare address tou worker apo 2o orisma accept
                 char ip[INET_ADDRSTRLEN];
                 inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
                 tuple newfd; newfd.fd = accepted_fd; newfd.type = "statistics"; newfd.address= std::string(ip);
+                //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
                 circle->place(newfd);
                 pthread_cond_broadcast(&(circle->nonempty));
                 //char ip[INET_ADDRSTRLEN];
@@ -161,9 +162,20 @@ int main(int argc, char ** argv){
               }while(accepted_fd > 0);
             }
             else if(listenfds[i].fd == listen_queries){ //einai o query listener
-              accepted_fd = accept(listen_queries, (struct sockaddr*) &peer_addr, &addr_size);
-              std::cout << "New queries connection!!\n";
-            }
+              do{
+                accepted_fd = accept(listen_queries, (struct sockaddr*) &peer_addr, &addr_size);
+                std::cout << "New queries connection!!\n";
+                char ip[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou client
+                tuple newfd; newfd.fd = accepted_fd; newfd.type = "query"; newfd.address= std::string(ip);
+                //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
+                circle->place(newfd);
+                pthread_cond_broadcast(&(circle->nonempty));
+
+                if(check_if_will_block(listen_queries)) //an tis phrame oles tis sundeseis
+                  {break;}
+              }while(accepted_fd > 0);
+            }//telos if query
           } //telos elegxou diathesimothtas fd
         }//telos for gia ta 2 autia
     } //telos else gia timeout ths poll
