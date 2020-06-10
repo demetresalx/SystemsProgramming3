@@ -29,7 +29,7 @@ void * thread_basis(void * ar){
     if(got.type == "statistics"){ //phrame sundesh gia worker kai statistics
       //paw na enhmerwshs work_db gia metadata twn workers
       work_db->cs_writer_start();
-      work_db->extract_worker(got.fd);
+      work_db->extract_worker(got);
       work_db->cs_writer_end();
       //diabazw & ektypwnw ta statistics!
       //xrhsimopoiw to synchro_stdout poy eftiaksa gia na mh mpleketai to stdout outpu
@@ -137,7 +137,9 @@ int main(int argc, char ** argv){
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
                 std::cout << "New statistics connection!!\n";
                 //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
-                tuple newfd; newfd.fd = accepted_fd; newfd.type = "statistics";
+                char ip[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
+                tuple newfd; newfd.fd = accepted_fd; newfd.type = "statistics"; newfd.address= std::string(ip);
                 circle->place(newfd);
                 pthread_cond_broadcast(&(circle->nonempty));
                 //char ip[INET_ADDRSTRLEN];

@@ -25,9 +25,11 @@ class tuple{
 public:
   int fd; //o file descriptor
   std::string type; //ti eidous fd einai
+  std::string address; //h ip poy prokyptei apo thn accept
   void operator = (tuple const &obj){
     fd = obj.fd;
     type = obj.type;
+    address = obj.address;
   }
 };
 
@@ -84,7 +86,7 @@ public:
   worker_db();
   ~worker_db();
   void add_worker(worker ); //prosthetei worker kanontas to swsto resize
-  void extract_worker(int ); //diabazei apo fd stoixeia enos worker
+  void extract_worker(tuple ); //diabazei apo fd stoixeia enos worker
   //gia eisodo-eksodo apo critical section.
   void cs_writer_start();
   void cs_writer_end();
