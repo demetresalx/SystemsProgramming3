@@ -2,7 +2,9 @@
 #include <string>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <arpa/inet.h>
+#include <poll.h>
 #include "threadfuns.h"
 #include "utils.h"
 
@@ -226,6 +228,8 @@ void ask_them_all(int fd, std::string quest, int * fdsarr){
   //KSEXWRIZW POIO ERWTHMA EINAI GIA NA KSERW TI THA KANW
   work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
   fdsarr = new int[work_db->n_workers]; //gia na krathsw tous fds twn workers
+  struct pollfd pollfds[work_db->n_workers];
+  int already_read[work_db->n_workers]; //mh diabaseis ksana to idio paidi
   struct sockaddr_in * work_addresses = new struct sockaddr_in[work_db->n_workers] ; //gia na krataw plhrofories na kanw connect meta stous workers
   for(int i=0; i< work_db->n_workers; i++){
     //PAW NA FTIAKSW SOCKET GIA KATHE WORKER WSTE NA STEILW MHNYMA EKEI. STHN PORTA POY MOY EIXE ORISEI STHN ARXH
@@ -235,19 +239,57 @@ void ask_them_all(int fd, std::string quest, int * fdsarr){
     work_addresses[i].sin_port = work_db->workers[i].port; //Vazw to port tou orismatos Serverport
     int work_sock = socket(AF_INET, SOCK_STREAM, 0);
     if(work_sock < 0)
-      {printf("socket error\n");pthread_exit(NULL);}
+      {printf("socket error\n");}
     fdsarr[i] = work_sock;
+    pollfds[i].fd = work_sock;
   }//telos for gia kathe worker
+  int works_num = work_db->n_workers;
   work_db->cs_reader_end(); //telos critical diabasmatos apo th domh
+  //dhmiourgw sundeseis gia na mporw na grafw/diabazw apo tous fds twn workers
+  for(int i=0; i< works_num; i++)
+    if(connect(fdsarr[i], (struct sockaddr *)&work_addresses[i], sizeof(work_addresses[i])) < 0)
+      {printf("\nConnection to worker failed\n");pthread_exit(NULL);}
+
+  //pame na tous metadwsoume ta erwthmata
   if(quest == "/diseaseFrequency1"){
     std::string disease; std::string date1; std::string date2;
     //diabase tis times twn orismatwn
     receive_string(fd, &disease ,IO_PRM);
     receive_string(fd, &date1 ,IO_PRM);
     receive_string(fd, &date2 ,IO_PRM);
-
     //prepei na rwthsw olous tous workers giati den exoume parametro country
-    
-  }
+    for(int i=0; i< works_num; i++){
+      send_string(fdsarr[i], "/diseaseFrequency1" ,IO_PRM);
+      send_string(fdsarr[i], &disease ,IO_PRM);
+      send_string(fdsarr[i], &date1 ,IO_PRM);
+      send_string(fdsarr[i], &date2 ,IO_PRM);
+    }
+  }//telos if diseaseFrequency1
+  //PAW NA DIABASW APANTHSEIS
+  //pare apanthsh
+  int intreader=0;
+  int intreader2=0;
+  int kids_read =0;
+  memset(already_read, 0, sizeof(already_read)); // arxika ola adiabasta
+  while(kids_read < works_num){
+    //arxikopoihsh se kathe loupa gia thn poll
+    reset_poll_parameters(pollfds, works_num);
+    int rc = poll(pollfds, works_num, 2000); //kanw poll
+    if(rc == 0)
+      {;;/*std::cout << "timeout\n";*/}
+    else{ //tsekarw poioi einai etoimoi
+      for(int i=0; i<works_num; i++){
+        if((pollfds[i].revents == POLLIN) && (already_read[i] == 0)){ //1os diathesimos poy den exei diabastei
+          receive_integer(pollfds[i].fd, &intreader);
+          intreader2 += intreader;
+          already_read[i] = 1;
+          kids_read++;
+        } //telos if diatheismothtas tou i
+      } //telos for diathesimothtas olwn
+    } //telos else timeout
+  }//telos while gia poll
+  std::cout << intreader2 << "\n";
+
+
   delete[] work_addresses;
 }

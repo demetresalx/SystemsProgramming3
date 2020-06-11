@@ -48,7 +48,8 @@ void * thread_basis(void * ar){
       //read and forward query to the Corresponding worker(s???)
       std::string quest = ""; receive_string(got.fd, &quest ,IO_PRM); //pare onoma entolhs
       if(must_ask_all(quest)){ //prepei na rwthsw olous tous workers
-        ;;//f
+        int * asked_workers = NULL;
+        ask_them_all(got.fd, quest, asked_workers);
       }
       else{ //paw mono sto swsto worker
         ;;

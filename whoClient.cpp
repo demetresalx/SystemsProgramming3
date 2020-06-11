@@ -54,7 +54,8 @@ void * threadcl(void * arln){
       sto.cs_end();
       pthread_exit(NULL);
   }
-  send_command(serv_sock, requ, params); //steilto
+  if(send_command(serv_sock, requ, params) < 0)//steilto!
+    {sto.cs_start();std::cout<<"Kako command. thread will temrminate\n";sto.cs_end();}
 
 
   pthread_exit(NULL);

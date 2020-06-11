@@ -260,7 +260,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       rdb = receive_string(accepted_fd, &date2, bsize); //diabase date2
       int number_to_present = diseases_htable.total_recs_for_cat(dis_name, date1, date2);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      send_integer(accepted_fd, &number_to_present); //tou stelnw to zhtoumeno noumero
       successful++;//epituxia
     }//telos if diseaseFrequency1
     else if(tool == "/diseaseFrequency2"){ //ME orisma country
