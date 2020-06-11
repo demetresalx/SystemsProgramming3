@@ -112,19 +112,28 @@ int main(int argc, char ** argv){
   //Mesw poll() tha mporw na vlepw poy dexomai sundeseis kai na tis prow8w analoga
   char buffer1[256], buffer2[256];
   int listen_stats = socket(AF_INET, SOCK_STREAM, 0);
+  const int opt = 1;
+  setsockopt(listen_stats, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+  setsockopt(listen_stats, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
   int listen_queries = socket(AF_INET, SOCK_STREAM, 0);
+  setsockopt(listen_queries, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+  setsockopt(listen_queries, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
   struct sockaddr_in my_addr, peer_addr;
   my_addr.sin_family = AF_INET;
   my_addr.sin_addr.s_addr = INADDR_ANY;
   my_addr.sin_port = htons(statisticsPortNum);
   //antistoixizw to socket sthn porta gia statistics
-  bind(listen_stats, (struct sockaddr*) &my_addr, sizeof(my_addr));
+  if(bind(listen_stats, (struct sockaddr*) &my_addr, sizeof(my_addr)) < 0)
+    {perror("Bind 1:"); return -1;}
   my_addr.sin_port = htons(queryPortNum);
   //antistoixizw to allo socket sthn porta gia queries
-  bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr));
+  if(bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr)) <0)
+    {perror("Bind 2:"); return -1;}
   //listen
-  listen(listen_stats, 10);
-  listen(listen_queries, 10);
+  if(listen(listen_stats, 15) < 0)
+    {perror("Listen 1:"); return -1;}
+  if(listen(listen_queries, 15) <0)
+    {perror("Listen 1:"); return -1;}
   socklen_t addr_size;
   addr_size = sizeof(struct sockaddr_in);
   std::string tool ="";
@@ -181,7 +190,7 @@ int main(int argc, char ** argv){
             else if(listenfds[i].fd == listen_queries){ //einai o query listener
               do{
                 accepted_fd = accept(listen_queries, (struct sockaddr*) &peer_addr, &addr_size);
-                std::cout << "New queries connection!!\n";
+                st.cs_start();std::cout << "New queries connection!!\n";st.cs_end();
                 char ip[INET_ADDRSTRLEN];
                 inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou client
                 tuple newfd; newfd.fd = accepted_fd; newfd.type = "query"; newfd.address= std::string(ip);

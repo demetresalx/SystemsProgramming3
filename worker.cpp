@@ -152,6 +152,9 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
 
     //thelw na parw ton arithmo portas poy tha steilw ston server
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    const int opt = 1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
     if(sock < 0)
       {printf("socket error\n");return -1;}
     struct sockaddr_in m_addr, peer_addr;
@@ -159,7 +162,8 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     m_addr.sin_family = AF_INET;
     m_addr.sin_addr.s_addr = INADDR_ANY;
     m_addr.sin_port = 0; //VAZW TO PORT 0 GIA NA PAREI TUXAIO DIA8ESIMO
-    bind(sock, (struct sockaddr *) &m_addr, sizeof(m_addr));
+    if(bind(sock, (struct sockaddr *) &m_addr, sizeof(m_addr)) < 0)
+      {perror("Bind :"); return -1;}
     //TWRA PAW NA VRW POIO PORT NUMBER EINAI AKRIBWS
     socklen_t len = sizeof(m_addr);
     getsockname(sock, (struct sockaddr *)&m_addr, &len);
