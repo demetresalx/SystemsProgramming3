@@ -74,7 +74,7 @@ int check_if_will_block(int );
 //gia katharisma entolwn tou client kuriws
 int sanitize_command(std::string, std::string *);
 //gia apostolh queries apo client se server
-int send_command(std::string *);
+int send_command(int , std::string *, int );
 
 
 #endif

@@ -54,6 +54,7 @@ void * threadcl(void * arln){
       sto.cs_end();
       pthread_exit(NULL);
   }
+  send_command(serv_sock, requ, params); //steilto
 
 
   pthread_exit(NULL);
