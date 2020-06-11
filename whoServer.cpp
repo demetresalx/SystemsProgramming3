@@ -47,9 +47,14 @@ void * thread_basis(void * ar){
     else if(got.type == "query"){ //phrame sundesh apo client kai periexei erwthma
       //read and forward query to the Corresponding worker(s???)
       std::string quest = ""; receive_string(got.fd, &quest ,IO_PRM); //pare onoma entolhs
+      std::string answer = "";
       if(must_ask_all(quest)){ //prepei na rwthsw olous tous workers
         int * asked_workers = NULL;
-        ask_them_all(got.fd, quest, asked_workers);
+        int indx = 0;
+        ask_them_all(got.fd, quest, &asked_workers, &indx);
+        get_and_compose_answer_from_all(quest, asked_workers, indx, &answer);
+        //stelnw apanthsh ston client
+        send_string(got.fd, &answer, IO_PRM);
       }
       else{ //paw mono sto swsto worker
         ;;

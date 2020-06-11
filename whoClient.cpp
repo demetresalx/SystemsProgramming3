@@ -55,8 +55,11 @@ void * threadcl(void * arln){
       pthread_exit(NULL);
   }
   if(send_command(serv_sock, requ, params) < 0)//steilto!
-    {sto.cs_start();std::cout<<"Kako command. thread will temrminate\n";sto.cs_end();}
-
+    {sto.cs_start();std::cout<<"Kako command. thread will temrminate\n";sto.cs_end();pthread_exit(NULL);}
+  std::string answer_to_present ="";
+  receive_string(serv_sock, &answer_to_present, IO_PRM);
+  //ektypwnw thread-safe sto stdout thn apanthsh poy phra
+  sto.cs_start(); std::cout << answer_to_present << "\n"; sto.cs_end();
 
   pthread_exit(NULL);
 }

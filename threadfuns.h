@@ -105,8 +105,8 @@ extern worker_db * work_db;
 bool must_ask_all(std::string );
 //gia prow8hsh erwthmatos sto worker apo server
 void ask_the_right_one(int , std::string );
-void ask_them_all(int , std::string , int *);
+void ask_them_all(int , std::string , int **, int *);
 //gia lhpsh apanthsewn apo worker se erwthma
 void get_answer_from_right_one();
-void get_and_compose_answer_from_all();
+void get_and_compose_answer_from_all(std::string , int *, int, std::string *);
 #endif

@@ -169,7 +169,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     uint16_t port_to_send = m_addr.sin_port;
     //STELNW STO SERVER TA SUMMARY STATISTICS
     if(connect(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
-        printf("\nConnection Failed. Server may not be up \n");
+        perror("\nConnection Failed:");
         return -1;
     }
     //grafw port kai ip poy prepei ISWS PREPEI KAI IP

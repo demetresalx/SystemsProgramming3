@@ -224,12 +224,10 @@ bool must_ask_all(std::string quer){
 }
 
 //rwtaw olous tous workers giati to erwthma den htan country-specific
-void ask_them_all(int fd, std::string quest, int * fdsarr){
+void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
   //KSEXWRIZW POIO ERWTHMA EINAI GIA NA KSERW TI THA KANW
   work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
-  fdsarr = new int[work_db->n_workers]; //gia na krathsw tous fds twn workers
-  struct pollfd pollfds[work_db->n_workers];
-  int already_read[work_db->n_workers]; //mh diabaseis ksana to idio paidi
+  *fdsarr = new int[work_db->n_workers]; //gia na krathsw tous fds twn workers
   struct sockaddr_in * work_addresses = new struct sockaddr_in[work_db->n_workers] ; //gia na krataw plhrofories na kanw connect meta stous workers
   for(int i=0; i< work_db->n_workers; i++){
     //PAW NA FTIAKSW SOCKET GIA KATHE WORKER WSTE NA STEILW MHNYMA EKEI. STHN PORTA POY MOY EIXE ORISEI STHN ARXH
@@ -240,14 +238,13 @@ void ask_them_all(int fd, std::string quest, int * fdsarr){
     int work_sock = socket(AF_INET, SOCK_STREAM, 0);
     if(work_sock < 0)
       {printf("socket error\n");}
-    fdsarr[i] = work_sock;
-    pollfds[i].fd = work_sock;
+    (*fdsarr)[i] = work_sock;
   }//telos for gia kathe worker
-  int works_num = work_db->n_workers;
+  *indx = work_db->n_workers;
   work_db->cs_reader_end(); //telos critical diabasmatos apo th domh
   //dhmiourgw sundeseis gia na mporw na grafw/diabazw apo tous fds twn workers
-  for(int i=0; i< works_num; i++)
-    if(connect(fdsarr[i], (struct sockaddr *)&work_addresses[i], sizeof(work_addresses[i])) < 0)
+  for(int i=0; i< *indx; i++)
+    if(connect((*fdsarr)[i], (struct sockaddr *)&work_addresses[i], sizeof(work_addresses[i])) < 0)
       {printf("\nConnection to worker failed\n");pthread_exit(NULL);}
 
   //pame na tous metadwsoume ta erwthmata
@@ -258,38 +255,53 @@ void ask_them_all(int fd, std::string quest, int * fdsarr){
     receive_string(fd, &date1 ,IO_PRM);
     receive_string(fd, &date2 ,IO_PRM);
     //prepei na rwthsw olous tous workers giati den exoume parametro country
-    for(int i=0; i< works_num; i++){
-      send_string(fdsarr[i], "/diseaseFrequency1" ,IO_PRM);
-      send_string(fdsarr[i], &disease ,IO_PRM);
-      send_string(fdsarr[i], &date1 ,IO_PRM);
-      send_string(fdsarr[i], &date2 ,IO_PRM);
+    for(int i=0; i< *indx ; i++){
+      send_string((*fdsarr)[i], "/diseaseFrequency1" ,IO_PRM);
+      send_string((*fdsarr)[i], &disease ,IO_PRM);
+      send_string((*fdsarr)[i], &date1 ,IO_PRM);
+      send_string((*fdsarr)[i], &date2 ,IO_PRM);
     }
   }//telos if diseaseFrequency1
-  //PAW NA DIABASW APANTHSEIS
-  //pare apanthsh
-  int intreader=0;
-  int intreader2=0;
-  int kids_read =0;
-  memset(already_read, 0, sizeof(already_read)); // arxika ola adiabasta
-  while(kids_read < works_num){
-    //arxikopoihsh se kathe loupa gia thn poll
-    reset_poll_parameters(pollfds, works_num);
-    int rc = poll(pollfds, works_num, 2000); //kanw poll
-    if(rc == 0)
-      {;;/*std::cout << "timeout\n";*/}
-    else{ //tsekarw poioi einai etoimoi
-      for(int i=0; i<works_num; i++){
-        if((pollfds[i].revents == POLLIN) && (already_read[i] == 0)){ //1os diathesimos poy den exei diabastei
-          receive_integer(pollfds[i].fd, &intreader);
-          intreader2 += intreader;
-          already_read[i] = 1;
-          kids_read++;
-        } //telos if diatheismothtas tou i
-      } //telos for diathesimothtas olwn
-    } //telos else timeout
-  }//telos while gia poll
-  std::cout << intreader2 << "\n";
-
 
   delete[] work_addresses;
+}
+
+//pairnw kai sun8etw apanthseis apo tous workers me poll
+//me thn poll den ka8usterw oso tha ka8usterousa an diabaza seiriaka ola ta fds
+void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_num, std::string * answer){
+  int already_read[works_num]; //mh diabaseis ksana to idio paidi
+  memset(already_read, 0, sizeof(already_read)); // arxika ola adiabasta
+  int works_read =0;
+  struct pollfd pollfds[works_num]; //gia na kanw poll to input apo tous workers
+  for(int i=0; i< works_num; i++)
+    pollfds[i].fd = fdsarr[i];
+  if(quest == "/diseaseFrequency1"){
+    //PAW NA DIABASW APANTHSEIS
+    int intreader=0;
+    int intreader2=0;
+    while(works_read < works_num){
+      //arxikopoihsh se kathe loupa gia thn poll
+      reset_poll_parameters(pollfds, works_num);
+      int rc = poll(pollfds, works_num, 2000); //kanw poll
+      if(rc == 0)
+        {;;/*std::cout << "timeout\n";*/}
+      else{ //tsekarw poioi einai etoimoi
+        for(int i=0; i<works_num; i++){
+          if((pollfds[i].revents == POLLIN) && (already_read[i] == 0)){ //1os diathesimos poy den exei diabastei
+            receive_integer(pollfds[i].fd, &intreader);
+            intreader2 += intreader;
+            already_read[i] = 1;
+            works_read++;
+          } //telos if diatheismothtas tou i
+        } //telos for diathesimothtas olwn
+      } //telos else timeout
+    }//telos while gia poll
+    st.cs_start();std::cout << intreader2 << "\n";st.cs_end();
+    *answer = std::to_string(intreader2); // h apanthsh gia ton client
+  }//telos if diseaseFrequency
+  //kleinw ta descriptors twn connections me ton worker kai diagrafw ton axrhsto pleon pinaka
+  for(int i=0; i< works_num; i++)
+    close(fdsarr[i]);
+  delete[] fdsarr;
+
 }
