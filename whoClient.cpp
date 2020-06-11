@@ -1,21 +1,44 @@
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <string.h>
-#include <pthread.h>
 #include <stdlib.h>
+#include <sys/socket.h> //socket programming
+#include <netinet/in.h> //socket programming
+#include <arpa/inet.h> //to idio
+#include "utils.h"
+#include "client_threads.h"
 
+
+//gia na kseroun poy na sunde8oun ta threads
+char servIP[256];
+int servPort =0;
+
+//gia na perimenei to main thread na diabastei h grammh apo to thread
 pthread_cond_t got_line_cnd = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t got_line_mtx = PTHREAD_MUTEX_INITIALIZER;
 bool got_line = false;
-
+//gia na ksekinhsoun ola ta threads mazi afou diabasoun tis entoles tous
 pthread_cond_t at_once_cnd = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t at_once_mtx = PTHREAD_MUTEX_INITIALIZER;
 bool at_once = false;
+//gia sygxronismo sto stdout
+synchro_stdot sto;
 
 void * threadcl(void * arln){
-  std::string ma = *((std::string *) arln); //phra th grammh moy
-  std::cout << ma << "\n";
+  std::string comm = *((std::string *) arln); //phra th grammh moy
+  std::string requ[12];
+  int params = sanitize_command(comm, requ); //apomonwse ta orismata
+  if(params <1)
+    {std::cout << "Badly defined query. Corresponding thread will terminate.\n";pthread_exit(NULL);}
+  //Paw na ftiaksw socket gia server
+  struct sockaddr_in serv_addr;
+  serv_addr.sin_family = AF_INET;
+  //inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
+  serv_addr.sin_addr.s_addr = inet_addr(servIP);
+  serv_addr.sin_port = htons(servPort); //Vazw to port tou orismatos Servport
+  int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
+  if(serv_sock < 0)
+    {printf("socket error\n");pthread_exit(NULL);}
   //eidopoiw main thread na sunexisei diabasma arxeiou
   got_line = true;
   pthread_cond_signal(&got_line_cnd);
@@ -24,15 +47,22 @@ void * threadcl(void * arln){
   while(!at_once)
     pthread_cond_wait(&at_once_cnd, &at_once_mtx);
   pthread_mutex_unlock(&at_once_mtx);
+  //ksekinhsamee!!! stelnw query
+  if(connect(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+      sto.cs_start();
+      printf("\nConnection Failed. Server may not be up. Corresponding thread will terminate.\n");
+      sto.cs_end();
+      pthread_exit(NULL);
+  }
+
 
   pthread_exit(NULL);
 }
 
+
 int main(int argc, char ** argv){
   //GIA TIS PARAMETROUS APO ARGC
   char queryFile[256];
-  char servIP[256];
-  int servPort =0;
   int numThreads=0;
   for (int i = 0; i < argc; i++){
     if (strcmp("-q", argv[i]) == 0){

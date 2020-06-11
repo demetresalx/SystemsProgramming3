@@ -4,7 +4,7 @@ LDFLAGS=
 SOURCES_COMMON=utils.cpp record.cpp
 SOURCES_MASTER=master.cpp master_boss.cpp worker.cpp record_HT.cpp cdHashTable.cpp topk.cpp bbst.cpp
 SOURCES_SERVER=whoServer.cpp threadfuns.cpp
-SOURCES_CLIENT=whoClient.cpp
+SOURCES_CLIENT=whoClient.cpp client_threads.cpp
 OBJECTS_COMMON=$(SOURCES_COMMON:.cpp=.o)
 OBJECTS_MASTER=$(SOURCES_MASTER:.cpp=.o)
 OBJECTS_SERVER=$(SOURCES_SERVER:.cpp=.o)
@@ -54,3 +54,6 @@ clean:
 #gia server programma
 #./whoServer -q 7777 -s 4444 -w 5 -b 6
 #valgrind --leak-check=full ./whoServer -q 7777 -s 4056 -w 5 -b 6
+
+#gia client programma
+#./whoClient -q ../inputs/ass3/queryfile.txt -w 3 -sip 192.168.1.1 -sp 7777

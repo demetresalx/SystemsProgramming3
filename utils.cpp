@@ -505,3 +505,16 @@ int check_if_will_block(int fd){
   else
     return 1; //nai tha blockare
 }
+
+//gia katharisma entolwn tou client kuriws
+int sanitize_command(std::string line, std::string *requ){
+  std::string const delims{ " \t\r\n" }; //delimiters einai ta: space,tab,comma kai carriage return. TELOS.
+  size_t beg, pos = 0;
+  int ind=0; //arithmos orismatwn + tou onomatos entolhs
+  while ((beg = line.find_first_not_of(delims, pos)) != std::string::npos){
+    pos = line.find_first_of(delims, beg + 1);
+    requ[ind] = line.substr(beg, pos - beg);
+    ind++;
+  }//telos while eksagwghs gnwrismatwn apo entolh
+  return ind;
+}

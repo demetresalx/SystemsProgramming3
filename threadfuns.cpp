@@ -68,6 +68,7 @@ pool::~pool(){
 
 //SYNCHRO_STDOUT
 synchro_stdout::synchro_stdout(){
+  user = false;
   lock = PTHREAD_MUTEX_INITIALIZER;
   in_use = PTHREAD_COND_INITIALIZER;
 }
