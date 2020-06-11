@@ -21,6 +21,7 @@ synchro_stdout  st; //des threadfuns.h & .cpp
 //external klash gia na krataw metadata gia tous workers kai na kserw ws thread ti na prow8hsw se poion kai se poia porta ktl...
 worker_db * work_db; //tha akoloy8h8ei readers-writers politikh gia thn prospelash-enhmerwsh ths klashs apo ta threads
 
+//sunarthsh POY KANEI TH DOULEIA TWN THREADS TOU SERVER
 void * thread_basis(void * ar){
   //pthread_exit(NULL);
   while(1){
@@ -42,10 +43,17 @@ void * thread_basis(void * ar){
         for(int k=0; k<nfls; k++)
           {st.cs_start();receive_and_print_file_summary(got.fd, IO_PRM);st.cs_end();} //ektupwse to summary
       }
-    }//telos if statistics
+    }//telos if statistics sundesh
     else if(got.type == "query"){ //phrame sundesh apo client kai periexei erwthma
-      ;;
-    }
+      //read and forward query to the Corresponding worker(s???)
+      std::string quest = ""; receive_string(got.fd, &quest ,IO_PRM); //pare onoma entolhs
+      if(must_ask_all(quest)){ //prepei na rwthsw olous tous workers
+        ;;//f
+      }
+      else{ //paw mono sto swsto worker
+        ;;
+      }
+    }//telos if query sundesh
   }//telos while atermonhs??
 }//telos thread_basis
 

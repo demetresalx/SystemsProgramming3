@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
 #include "threadfuns.h"
 #include "utils.h"
@@ -197,4 +198,56 @@ void worker_db::cs_reader_end(){
   if(readers == 0)
     pthread_cond_signal(&writecond); //broadcast xwris if??
   pthread_mutex_unlock(&lock);
+}
+
+//gia anazhthsh worker basei xwras
+worker * worker_db::search_worker_by_country(std::string country){
+  for(int i=0; i<n_workers; i++)
+    if(workers[i].has_country(country))
+      return &(workers[i]); //gurna deikth ston worker
+  return NULL;
+}
+
+//prepei na rwthsw olous tous workers?
+bool must_ask_all(std::string quer){
+  if(quer == "/diseaseFrequency1")
+    return true;
+  if(quer == "/searchPatientRecord")
+    return true;
+  if(quer == "/numPatientAdmissions1")
+    return true;
+  if(quer == "/numPatientDischarges1")
+    return true;
+  return false;
+}
+
+//rwtaw olous tous workers giati to erwthma den htan country-specific
+void ask_them_all(int fd, std::string quest, int * fdsarr){
+  //KSEXWRIZW POIO ERWTHMA EINAI GIA NA KSERW TI THA KANW
+  work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
+  fdsarr = new int[work_db->n_workers]; //gia na krathsw tous fds twn workers
+  struct sockaddr_in * work_addresses = new struct sockaddr_in[work_db->n_workers] ; //gia na krataw plhrofories na kanw connect meta stous workers
+  for(int i=0; i< work_db->n_workers; i++){
+    //PAW NA FTIAKSW SOCKET GIA KATHE WORKER WSTE NA STEILW MHNYMA EKEI. STHN PORTA POY MOY EIXE ORISEI STHN ARXH
+    work_addresses[i].sin_family = AF_INET;
+    //inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
+    work_addresses[i].sin_addr.s_addr = inet_addr(work_db->workers[i].address.c_str());
+    work_addresses[i].sin_port = work_db->workers[i].port; //Vazw to port tou orismatos Serverport
+    int work_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(work_sock < 0)
+      {printf("socket error\n");pthread_exit(NULL);}
+    fdsarr[i] = work_sock;
+  }//telos for gia kathe worker
+  work_db->cs_reader_end(); //telos critical diabasmatos apo th domh
+  if(quest == "/diseaseFrequency1"){
+    std::string disease; std::string date1; std::string date2;
+    //diabase tis times twn orismatwn
+    receive_string(fd, &disease ,IO_PRM);
+    receive_string(fd, &date1 ,IO_PRM);
+    receive_string(fd, &date2 ,IO_PRM);
+
+    //prepei na rwthsw olous tous workers giati den exoume parametro country
+    
+  }
+  delete[] work_addresses;
 }
