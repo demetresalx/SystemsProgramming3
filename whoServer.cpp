@@ -130,9 +130,9 @@ int main(int argc, char ** argv){
   if(bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr)) <0)
     {perror("Bind 2:"); return -1;}
   //listen
-  if(listen(listen_stats, 15) < 0)
+  if(listen(listen_stats, 500) < 0)
     {perror("Listen 1:"); return -1;}
-  if(listen(listen_queries, 15) <0)
+  if(listen(listen_queries, 500) <0)
     {perror("Listen 1:"); return -1;}
   socklen_t addr_size;
   addr_size = sizeof(struct sockaddr_in);

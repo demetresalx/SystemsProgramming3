@@ -262,6 +262,43 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
       send_string((*fdsarr)[i], &date2 ,IO_PRM);
     }
   }//telos if diseaseFrequency1
+  else if(quest == "/searchPatientRecord"){
+    std::string requested_id;
+    receive_string(fd, &requested_id, IO_PRM); //to id pros anazhthsh
+    //prepei na rwthsw olous tous workers giati den exoume parametro country
+    for(int i=0; i< *indx ; i++){
+      send_string((*fdsarr)[i], "/searchPatientRecord" ,IO_PRM);
+      send_string((*fdsarr)[i], &requested_id ,IO_PRM); //stelnw erwthma k id
+    }
+  }//telos if searchPatientRecord
+  else if(quest == "/numPatientAdmissions1"){
+    std::string disease; std::string date1; std::string date2;
+    //diabase tis times twn orismatwn
+    receive_string(fd, &disease ,IO_PRM);
+    receive_string(fd, &date1 ,IO_PRM);
+    receive_string(fd, &date2 ,IO_PRM);
+    //prepei na rwthsw olous tous workers giati den exoume parametro country
+    for(int i=0; i< *indx ; i++){
+      send_string((*fdsarr)[i], "/numPatientAdmissions1" ,IO_PRM);
+      send_string((*fdsarr)[i], &disease ,IO_PRM);
+      send_string((*fdsarr)[i], &date1 ,IO_PRM);
+      send_string((*fdsarr)[i], &date2 ,IO_PRM);
+    }
+  }//telos if numPatientAdmissions1
+  else if(quest == "/numPatientDischarges1"){
+    std::string disease; std::string date1; std::string date2;
+    //diabase tis times twn orismatwn
+    receive_string(fd, &disease ,IO_PRM);
+    receive_string(fd, &date1 ,IO_PRM);
+    receive_string(fd, &date2 ,IO_PRM);
+    //prepei na rwthsw olous tous workers giati den exoume parametro country
+    for(int i=0; i< *indx ; i++){
+      send_string((*fdsarr)[i], "/numPatientDischarges1" ,IO_PRM);
+      send_string((*fdsarr)[i], &disease ,IO_PRM);
+      send_string((*fdsarr)[i], &date1 ,IO_PRM);
+      send_string((*fdsarr)[i], &date2 ,IO_PRM);
+    }
+  }//telos if numPatientDischarges1
 
   delete[] work_addresses;
 }

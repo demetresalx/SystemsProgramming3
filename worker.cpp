@@ -229,7 +229,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
   int failed = 0; //apotuxhmena erwthmata
   int accepted_fd;
   socklen_t addr_size = sizeof(struct sockaddr_in);
-  listen(sock, 10);
+  listen(sock, 500);
   std::cout << "Listening for queries!!\n";
   while(1){
 
