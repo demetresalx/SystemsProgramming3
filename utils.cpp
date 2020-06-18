@@ -626,3 +626,20 @@ int send_command(int sfd, std::string * requ, int ind){
   }//telos if numPatientDischarges
   return -1;
 }
+
+//pare kai kolla sto answer thn apanthsh gia numPatientAdmissions k discharges xwris xwra
+void read_and_present_num_adms_disch(int rfd, std::string * answ){
+  int nc =0;
+  int adms=0;
+  receive_integer(rfd, &nc);
+  std::string cname;
+  for(int i=0; i< nc; i++){
+    //pare onoma xwras
+    receive_string(rfd, &cname, IO_PRM);
+    //pare timh
+    receive_integer(rfd, &adms);
+    //std::cout << cname << " " << adms << "\n";
+    *answ += cname + " " + std::to_string(adms) + "\n";
+  }
+
+}

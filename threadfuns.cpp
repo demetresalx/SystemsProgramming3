@@ -336,6 +336,39 @@ void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_
     st.cs_start();std::cout << intreader2 << "\n";st.cs_end();
     *answer = std::to_string(intreader2); // h apanthsh gia ton client
   }//telos if diseaseFrequency
+  else if(quest == "/searchPatientRecord"){
+    //pare tis apanthseis
+    std::string requested_record = "";
+    for(int i=0; i< works_num; i++){
+      receive_string(pollfds[i].fd, &requested_record ,IO_PRM);
+      if(requested_record == "nope") //auto to apantane oi workers poy den exoun thn eggrafh
+        continue;
+      else{
+        st.cs_start();std::cout << requested_record << "\n";st.cs_end();
+        *answer = requested_record;
+      }
+    }
+  }//telos if searchPatientRecord
+  else if(quest == "/numPatientAdmissions1"){
+    //pare apanthsh
+    while(works_read < works_num){
+      //arxikopoihsh se kathe loupa gia thn poll
+      reset_poll_parameters(pollfds, works_num);
+      int rc = poll(pollfds, works_num, 2000); //kanw poll
+      if(rc == 0)
+        {;;/*std::cout << "timeout\n";*/}
+      else{ //tsekarw poioi einai etoimoi
+        for(int i=0; i<works_num; i++){
+          if((pollfds[i].revents == POLLIN) && (already_read[i] == 0)){ //1os diathesimos poy den exei diabastei
+            read_and_present_num_adms_disch(pollfds[i].fd, answer);
+            already_read[i] = 1;
+            works_read++;
+          } //telos if diatheismothtas tou i
+        } //telos for diathesimothtas olwn
+      } //telos else timeout
+    }//telos while gia poll
+    st.cs_start();std::cout << *answer << "\n";st.cs_end();
+  }//telos if numPatientAdmissions1
   //kleinw ta descriptors twn connections me ton worker kai diagrafw ton axrhsto pleon pinaka
   for(int i=0; i< works_num; i++)
     close(fdsarr[i]);
