@@ -278,7 +278,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.total_recs_for_cat(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      send_integer(accepted_fd, &number_to_present); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos if diseaseFrequency2
     else if(tool == "/listCountries"){
@@ -351,7 +351,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.admissions(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      send_integer(accepted_fd, &number_to_present); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos numPatientAdmissions2
     else if(tool == "/numPatientDischarges1"){ //xwris country
@@ -380,7 +380,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       rdb = receive_string(accepted_fd, &country, bsize); //diabase date2
       int number_to_present = diseases_htable.discharges(dis_name, date1, date2, country);
       //std::cout << dis_name << " ^ " << number_to_present << "\n";
-      write(accepted_fd, &number_to_present, sizeof(int)); //tou stelnw to zhtoumeno noumero
+      send_integer(accepted_fd, &number_to_present); //tou stelnw to zhtoumeno noumero
       successful++; //epituxia
     }//telos numPatientDischarges2
     else{

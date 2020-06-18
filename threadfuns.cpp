@@ -211,16 +211,24 @@ worker * worker_db::search_worker_by_country(std::string country){
 }
 
 //prepei na rwthsw olous tous workers?
-bool must_ask_all(std::string quer){
+int must_ask_all(std::string quer){
   if(quer == "/diseaseFrequency1")
-    return true;
+    return 1;
   if(quer == "/searchPatientRecord")
-    return true;
+    return 1;
   if(quer == "/numPatientAdmissions1")
-    return true;
+    return 1;
   if(quer == "/numPatientDischarges1")
-    return true;
-  return false;
+    return 1;
+  if(quer == "/diseaseFrequency2")
+    return 2;
+  if(quer == "/numPatientDischarges2")
+    return 2;
+  if(quer == "/numPatientAdmissions2")
+    return 2;
+  if(quer == "/topk-AgeRanges")
+    return 2;
+  return -1;
 }
 
 //rwtaw olous tous workers giati to erwthma den htan country-specific
@@ -373,6 +381,26 @@ void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_
     }//telos while gia poll
     //st.cs_start();std::cout << *answer << "\n";st.cs_end();
   }//telos if numPatientAdmissions1
+  else if(quest == "/numPatientDischarges1"){
+    //pare apanthsh
+    while(works_read < works_num){
+      //arxikopoihsh se kathe loupa gia thn poll
+      reset_poll_parameters(pollfds, works_num);
+      int rc = poll(pollfds, works_num, 2000); //kanw poll
+      if(rc == 0)
+        {;;/*std::cout << "timeout\n";*/}
+      else{ //tsekarw poioi einai etoimoi
+        for(int i=0; i<works_num; i++){
+          if((pollfds[i].revents == POLLIN) && (already_read[i] == 0)){ //1os diathesimos poy den exei diabastei
+            read_and_present_num_adms_disch(pollfds[i].fd, answer);
+            already_read[i] = 1;
+            works_read++;
+          } //telos if diatheismothtas tou i
+        } //telos for diathesimothtas olwn
+      } //telos else timeout
+    }//telos while gia poll
+    //st.cs_start();std::cout << *answer << "\n";st.cs_end();
+  }//telos if numPatientDischarges1
   //kleinw ta descriptors twn connections me ton worker kai diagrafw ton axrhsto pleon pinaka
   for(int i=0; i< works_num; i++)
     close(fdsarr[i]);
@@ -428,7 +456,7 @@ void ask_the_right_one(int fd, std::string quest, int * wfd, std::string * q_to_
   int work_sock = socket(AF_INET, SOCK_STREAM, 0);
   if(work_sock < 0)
     {printf("socket error\n");}
-  if(connect(work_sock, (struct sockaddr *)&work_address, sizeof(work_address)) < 0)
+  if(connect(work_sock, (struct sockaddr *)&work_address, sizeof(struct sockaddr_in)) < 0)
     {printf("\nConnection to worker failed\n");pthread_exit(NULL);}
   //pame na metadwsoume to erwthma me tis parametrous!!
   *wfd = work_sock; //kratame to file descriptor
@@ -461,4 +489,27 @@ void ask_the_right_one(int fd, std::string quest, int * wfd, std::string * q_to_
     send_string(work_sock, &date2, IO_PRM);//steile date2
     send_string(work_sock, &country, IO_PRM);//steile country
   }//telos if numPatientDischarges2
+}
+
+//pairnei thn apanthsh apo auton ton enan
+void get_answer_from_right_one(std::string quest, int fd, std::string * answer){
+  if(quest == "/diseaseFrequency2"){
+    int number =0;
+    receive_integer(fd, &number); //pare ton arithmo
+    *answer += std::to_string(number);
+  }//telos if diseaseFrequency2
+  else if(quest == "/topk-AgeRanges"){
+    ;;
+  }//telos if topk-AgeRanges
+  else if(quest == "/numPatientAdmissions2"){
+    int number =0;
+    receive_integer(fd, &number); //pare ton arithmo
+    *answer += std::to_string(number);
+  }//telos if numPatientAdmissions2
+  else if(quest == "/numPatientDischarges2"){
+    int number =0;
+    receive_integer(fd, &number); //pare ton arithmo
+    *answer += std::to_string(number);
+  }//telos if numPatientDischarges2
+  close(fd);
 }

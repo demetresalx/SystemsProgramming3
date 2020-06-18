@@ -49,7 +49,7 @@ void * thread_basis(void * ar){
       std::string quest = ""; receive_string(got.fd, &quest ,IO_PRM); //pare onoma entolhs
       std::string answer = "";
       std::string q_to_print = "";
-      if(must_ask_all(quest)){ //prepei na rwthsw olous tous workers
+      if(must_ask_all(quest) == 1){ //prepei na rwthsw olous tous workers
         int * asked_workers = NULL;
         int indx = 0;
         ask_them_all(got.fd, quest, &asked_workers, &indx, &q_to_print);
@@ -62,8 +62,16 @@ void * thread_basis(void * ar){
         //stelnw apanthsh ston client
         send_string(got.fd, &answer, IO_PRM);
       }
-      else{ //paw mono sto swsto worker
-        ;;
+      else if(must_ask_all(quest) == 2){ //paw mono sto swsto worker
+        int rightfd = -1;
+        ask_the_right_one(got.fd, quest, &rightfd, &q_to_print); //bres k rwta ayton p prepei
+        get_answer_from_right_one(quest, rightfd, &answer); //pare apanthsh
+        st.cs_start(); //ektypwse th me thread-safe tropo
+        std::cout << q_to_print << "\n";
+        std::cout << answer << "\n";
+        st.cs_end();
+        //stelnw apanthsh ston client
+        send_string(got.fd, &answer, IO_PRM);
       }
     }//telos if query sundesh
     close(got.fd); //to eksuphrethsa, to kleinw
