@@ -520,7 +520,7 @@ int sanitize_command(std::string line, std::string *requ){
 }
 
 //gia apostolh apo thread client se server
-int send_command(int sfd, std::string * requ, int ind){
+int send_command(int sfd, std::string * requ, int ind, std::string comm){
   if(requ[0] == "/diseaseFrequency"){
     if(ind == 4){ //xwris to proairetiko country
       if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
@@ -531,6 +531,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[1], IO_PRM);//steile disease
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
     else if(ind ==5){ //me orisma country
@@ -543,6 +544,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
       send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
   }//telos if diseaseFrequency
@@ -551,6 +553,7 @@ int send_command(int sfd, std::string * requ, int ind){
       //steile to aithma
       send_string(sfd, "/searchPatientRecord", IO_PRM);
       send_string(sfd, &requ[1], IO_PRM); //steile to id pros anazhthsh
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
   }//telos if searchPatientRecord
@@ -570,6 +573,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[3], IO_PRM);//steile disease
       send_string(sfd, &requ[4], IO_PRM);//steile date1
       send_string(sfd, &requ[5], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
   }//telos if topk
@@ -584,6 +588,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[1], IO_PRM);//steile disease
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
     else if(ind ==5){ //me orisma country
@@ -596,6 +601,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
       send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
   }//telos if numPatientAdmissions
@@ -609,6 +615,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[1], IO_PRM);//steile disease
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
     else if(ind ==5){ //me country
@@ -621,6 +628,7 @@ int send_command(int sfd, std::string * requ, int ind){
       send_string(sfd, &requ[2], IO_PRM);//steile date1
       send_string(sfd, &requ[3], IO_PRM);//steile date2
       send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
       return 1;
     }
   }//telos if numPatientDischarges

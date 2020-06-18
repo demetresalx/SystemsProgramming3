@@ -224,7 +224,7 @@ bool must_ask_all(std::string quer){
 }
 
 //rwtaw olous tous workers giati to erwthma den htan country-specific
-void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
+void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx, std::string * q_to_print){
   //KSEXWRIZW POIO ERWTHMA EINAI GIA NA KSERW TI THA KANW
   work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
   *fdsarr = new int[work_db->n_workers]; //gia na krathsw tous fds twn workers
@@ -234,7 +234,7 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
     work_addresses[i].sin_family = AF_INET;
     //inet_pton(AF_INET, serverIP, &(serv_addr.sin_addr)); //pare vale th dieu9unsh tou server
     work_addresses[i].sin_addr.s_addr = inet_addr(work_db->workers[i].address.c_str());
-    work_addresses[i].sin_port = work_db->workers[i].port; //Vazw to port tou orismatos Serverport
+    work_addresses[i].sin_port = work_db->workers[i].port;
     int work_sock = socket(AF_INET, SOCK_STREAM, 0);
     if(work_sock < 0)
       {printf("socket error\n");}
@@ -254,6 +254,7 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
     receive_string(fd, &disease ,IO_PRM);
     receive_string(fd, &date1 ,IO_PRM);
     receive_string(fd, &date2 ,IO_PRM);
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
     //prepei na rwthsw olous tous workers giati den exoume parametro country
     for(int i=0; i< *indx ; i++){
       send_string((*fdsarr)[i], "/diseaseFrequency1" ,IO_PRM);
@@ -265,6 +266,7 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
   else if(quest == "/searchPatientRecord"){
     std::string requested_id;
     receive_string(fd, &requested_id, IO_PRM); //to id pros anazhthsh
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
     //prepei na rwthsw olous tous workers giati den exoume parametro country
     for(int i=0; i< *indx ; i++){
       send_string((*fdsarr)[i], "/searchPatientRecord" ,IO_PRM);
@@ -277,6 +279,7 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
     receive_string(fd, &disease ,IO_PRM);
     receive_string(fd, &date1 ,IO_PRM);
     receive_string(fd, &date2 ,IO_PRM);
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
     //prepei na rwthsw olous tous workers giati den exoume parametro country
     for(int i=0; i< *indx ; i++){
       send_string((*fdsarr)[i], "/numPatientAdmissions1" ,IO_PRM);
@@ -291,6 +294,7 @@ void ask_them_all(int fd, std::string quest, int ** fdsarr, int * indx){
     receive_string(fd, &disease ,IO_PRM);
     receive_string(fd, &date1 ,IO_PRM);
     receive_string(fd, &date2 ,IO_PRM);
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
     //prepei na rwthsw olous tous workers giati den exoume parametro country
     for(int i=0; i< *indx ; i++){
       send_string((*fdsarr)[i], "/numPatientDischarges1" ,IO_PRM);
@@ -333,7 +337,7 @@ void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_
         } //telos for diathesimothtas olwn
       } //telos else timeout
     }//telos while gia poll
-    st.cs_start();std::cout << intreader2 << "\n";st.cs_end();
+    //st.cs_start();std::cout << intreader2 << "\n";st.cs_end();
     *answer = std::to_string(intreader2); // h apanthsh gia ton client
   }//telos if diseaseFrequency
   else if(quest == "/searchPatientRecord"){
@@ -344,7 +348,7 @@ void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_
       if(requested_record == "nope") //auto to apantane oi workers poy den exoun thn eggrafh
         continue;
       else{
-        st.cs_start();std::cout << requested_record << "\n";st.cs_end();
+        //st.cs_start();std::cout << requested_record << "\n";st.cs_end();
         *answer = requested_record;
       }
     }
@@ -367,11 +371,94 @@ void get_and_compose_answer_from_all(std::string quest, int * fdsarr, int works_
         } //telos for diathesimothtas olwn
       } //telos else timeout
     }//telos while gia poll
-    st.cs_start();std::cout << *answer << "\n";st.cs_end();
+    //st.cs_start();std::cout << *answer << "\n";st.cs_end();
   }//telos if numPatientAdmissions1
   //kleinw ta descriptors twn connections me ton worker kai diagrafw ton axrhsto pleon pinaka
   for(int i=0; i< works_num; i++)
     close(fdsarr[i]);
   delete[] fdsarr;
+}
 
+//rwtaw mono ton worker poy prepei (country specific)
+void ask_the_right_one(int fd, std::string quest, int * wfd, std::string * q_to_print){
+  std::string country; //basikotato orisma poy tha mas kathorisei poion worker tha pame
+  std::string disease; std::string date1; std::string date2; int k; //ypoloipa dunata orismata
+  //dwse prwta timh se ka8e dunath parametro
+  if(quest == "/diseaseFrequency2"){
+    //diabase tis times twn orismatwn
+    receive_string(fd, &disease ,IO_PRM);
+    receive_string(fd, &date1 ,IO_PRM);
+    receive_string(fd, &date2 ,IO_PRM);
+    receive_string(fd, &country, IO_PRM);
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
+  }//telos if diseaseFrequency2
+  else if(quest == "/topk-AgeRanges"){
+    receive_integer(fd, &k);
+    receive_string(fd, &country, IO_PRM);//steile country
+    receive_string(fd, &disease, IO_PRM);//steile disease
+    receive_string(fd, &date1, IO_PRM);//steile date1
+    receive_string(fd, &date2, IO_PRM);//steile date2
+    receive_string(fd, q_to_print, IO_PRM); //pare kai to akribes erwthma na ektupw8ei
+  }//telos if topk-AgeRanges
+  else if(quest == "/numPatientAdmissions2"){
+    receive_string(fd, &disease, IO_PRM);//steile disease
+    receive_string(fd, &date1, IO_PRM);//steile date1
+    receive_string(fd, &date2, IO_PRM);//steile date2
+    receive_string(fd, &country, IO_PRM);//steile country
+    receive_string(fd, q_to_print, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+  }//telos if numPatientAdmissions2
+  else if(quest == "/numPatientDischarges2"){
+    receive_string(fd, &disease, IO_PRM);//steile disease
+    receive_string(fd, &date1, IO_PRM);//steile date1
+    receive_string(fd, &date2, IO_PRM);//steile date2
+    receive_string(fd, &country, IO_PRM);//steile country
+    receive_string(fd, q_to_print, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+  }//telos if numPatientDischarges2
+  //prepei na brw poios einai autos o worker
+  worker * right_one = NULL;
+  struct sockaddr_in work_address;
+  work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
+  right_one = work_db->search_worker_by_country(country); //ton briskei
+  //kratame tis plhrofories poy xreiazontai gia connection mazi tou
+  work_address.sin_family = AF_INET;
+  work_address.sin_addr.s_addr = inet_addr(right_one->address.c_str());
+  work_address.sin_port = right_one->port;
+  work_db->cs_reader_end(); //ta phrame
+  //pame gia connect ston worker!
+  int work_sock = socket(AF_INET, SOCK_STREAM, 0);
+  if(work_sock < 0)
+    {printf("socket error\n");}
+  if(connect(work_sock, (struct sockaddr *)&work_address, sizeof(work_address)) < 0)
+    {printf("\nConnection to worker failed\n");pthread_exit(NULL);}
+  //pame na metadwsoume to erwthma me tis parametrous!!
+  *wfd = work_sock; //kratame to file descriptor
+  if(quest == "/diseaseFrequency2"){
+    send_string(work_sock, "/diseaseFrequency2", IO_PRM);//steile thn entolh
+    send_string(work_sock, &disease, IO_PRM);//steile disease
+    send_string(work_sock, &date1, IO_PRM);//steile date1
+    send_string(work_sock, &date2, IO_PRM);//steile date2
+    send_string(work_sock, &country, IO_PRM);//steile country
+  }//telos if diseaseFrequency2
+  else if(quest == "/topk-AgeRanges"){
+    send_string(work_sock, "/topk-AgeRanges", IO_PRM);//steile thn entolh
+    send_integer(work_sock, &k);//steile k
+    send_string(work_sock, &country, IO_PRM);//steile country
+    send_string(work_sock, &disease, IO_PRM);//steile disease
+    send_string(work_sock, &date1, IO_PRM);//steile date1
+    send_string(work_sock, &date2, IO_PRM);//steile date2
+  }//telos if topk-AgeRanges
+  else if(quest == "/numPatientAdmissions2"){
+    send_string(work_sock, "/numPatientAdmissions2", IO_PRM);//steile thn entolh
+    send_string(work_sock, &disease, IO_PRM);//steile disease
+    send_string(work_sock, &date1, IO_PRM);//steile date1
+    send_string(work_sock, &date2, IO_PRM);//steile date2
+    send_string(work_sock, &country, IO_PRM);//steile country
+  }//telos if numPatientAdmissions2
+  else if(quest == "/numPatientDischarges2"){
+    send_string(work_sock, "/numPatientDischarges2", IO_PRM);//steile thn entolh
+    send_string(work_sock, &disease, IO_PRM);//steile disease
+    send_string(work_sock, &date1, IO_PRM);//steile date1
+    send_string(work_sock, &date2, IO_PRM);//steile date2
+    send_string(work_sock, &country, IO_PRM);//steile country
+  }//telos if numPatientDischarges2
 }

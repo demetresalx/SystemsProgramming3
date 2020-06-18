@@ -418,11 +418,11 @@ void deliver_topk(int wfd, int fetchd, int * res_arr, float * fres_arr){
 
 //stelnw apotelesmata sthn 1h periptwsh ths numadmissions
 void deliver_num_adms_disch1(int wfd, int ncountries ,void * stptr, int * admis , int bsize){
-  write(wfd, &ncountries, sizeof(int));
+  send_integer(wfd, &ncountries);
   for(int i=0; i<ncountries; i++){
     //stelnw xwra
     send_string(wfd, &(((std::string *)stptr)[i]), bsize );
     //stelnw timh
-    write(wfd, &admis[i], sizeof(int));
+    send_integer(wfd, &admis[i]);
   }
 }

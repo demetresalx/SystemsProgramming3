@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h> //perror
 #include <sys/socket.h> //socket programming
 #include <netinet/in.h> //socket programming
@@ -55,13 +56,16 @@ void * threadcl(void * arln){
       sto.cs_end();
       pthread_exit(NULL);
   }
-  if(send_command(serv_sock, requ, params) < 0)//steilto!
+  if(send_command(serv_sock, requ, params, comm) < 0)//steilto!
     {sto.cs_start();std::cout<<"Kako command. thread will temrminate\n";sto.cs_end();pthread_exit(NULL);}
   std::string answer_to_present ="";
   receive_string(serv_sock, &answer_to_present, IO_PRM);
-  //ektypwnw thread-safe sto stdout thn apanthsh poy phra
-  sto.cs_start(); std::cout << answer_to_present << "\n"; sto.cs_end();
-
+  //ektypwnw thread-safe sto stdout thn apanthsh poy phra ISWS KAI THN ERWTHSH
+  sto.cs_start();
+  std::cout << comm << "\n";
+  std::cout << answer_to_present << "\n";
+  sto.cs_end();
+  close(serv_sock); //kleinw sundesh
   pthread_exit(NULL);
 }
 

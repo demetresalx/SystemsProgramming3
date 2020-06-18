@@ -48,11 +48,17 @@ void * thread_basis(void * ar){
       //read and forward query to the Corresponding worker(s???)
       std::string quest = ""; receive_string(got.fd, &quest ,IO_PRM); //pare onoma entolhs
       std::string answer = "";
+      std::string q_to_print = "";
       if(must_ask_all(quest)){ //prepei na rwthsw olous tous workers
         int * asked_workers = NULL;
         int indx = 0;
-        ask_them_all(got.fd, quest, &asked_workers, &indx);
+        ask_them_all(got.fd, quest, &asked_workers, &indx, &q_to_print);
         get_and_compose_answer_from_all(quest, asked_workers, indx, &answer);
+        //ektypwnw erwthma kai apanthsh sto stdout, me thread-safe tropo
+        st.cs_start();
+        std::cout << q_to_print << "\n";
+        std::cout << answer << "\n";
+        st.cs_end();
         //stelnw apanthsh ston client
         send_string(got.fd, &answer, IO_PRM);
       }
@@ -60,6 +66,7 @@ void * thread_basis(void * ar){
         ;;
       }
     }//telos if query sundesh
+    close(got.fd); //to eksuphrethsa, to kleinw
   }//telos while atermonhs??
 }//telos thread_basis
 
