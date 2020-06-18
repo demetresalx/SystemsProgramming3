@@ -205,9 +205,9 @@ int main(int argc, char ** argv){
             else if(listenfds[i].fd == listen_queries){ //einai o query listener
               do{
                 accepted_fd = accept(listen_queries, (struct sockaddr*) &peer_addr, &addr_size);
-                st.cs_start();std::cout << "New queries connection!!\n";st.cs_end();
-                char ip[INET_ADDRSTRLEN];
-                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou client
+                //st.cs_start();std::cout << "New queries connection!!\n";st.cs_end();
+                char ip[INET_ADDRSTRLEN]; //pairnw dieu9unsh autoy poy moy esteile aithma gia na kseroun ta threads moy
+                inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN);
                 tuple newfd; newfd.fd = accepted_fd; newfd.type = "query"; newfd.address= std::string(ip);
                 //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
                 circle->place(newfd);

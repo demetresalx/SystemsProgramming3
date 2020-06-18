@@ -649,5 +649,29 @@ void read_and_present_num_adms_disch(int rfd, std::string * answ){
     //std::cout << cname << " " << adms << "\n";
     *answ += cname + " " + std::to_string(adms) + "\n";
   }
+}
 
+//pare kai kolla sto answer thn apanthsh gia topk
+//GIA TA POSOSTA EVALA 0 DEKADIKA PSHFIA GIATI ETSI EINAI STHN EKFWNHSH
+void read_and_present_topk(int rfd, std::string * answer){
+  int fetched=0;
+  receive_integer(rfd, &fetched);
+  if(fetched ==0) //to paidi auto den exei tpt. mh sunexiseis
+    return;
+
+  int age_cat;
+  std::string pososto = ""; //moy to esteile ws string
+  //diabazw ta topk tou paidiou (mono ena paidi tha einai)
+  for(int i=0; i< fetched; i++){
+    receive_integer(rfd, &age_cat); //pare omada hlikias
+    receive_string(rfd, &pososto, sizeof(float)); //pare pososto
+    if(age_cat == 0)
+      *answer += "0-20: " + pososto + "%\n";
+    else if(age_cat == 1)
+      *answer += "21-40: " + pososto + "%\n";
+    else if(age_cat == 2)
+      *answer += "41-60: " + pososto + "%\n";
+    else
+      *answer += "60+: " + pososto + "%\n";
+  }
 }

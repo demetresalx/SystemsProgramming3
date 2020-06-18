@@ -404,15 +404,18 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
 }
 
 //stelnei ston patera apotelesmata topk
+//MHDEN DEKADIKA PSHFIA APO EKFWNHSH ASKHSHS 2
 void deliver_topk(int wfd, int fetchd, int * res_arr, float * fres_arr){
-  write(wfd, &fetchd, sizeof(int)); //enhmerwse ton patera na kserei ti na perimenei na diabasei
+  char fl2s[100]; //gia metatroph float se string
+  send_integer(wfd, &fetchd); //enhmerwse ton patera na kserei ti na perimenei na diabasei
   if(fetchd == 0) //tipota
     return;
 
   for(int i=0; i< fetchd; i++){
-    write(wfd, &res_arr[i], sizeof(int)); //hlikiakh kathgoria
-    write(wfd, &fres_arr[i], sizeof(float)); //pososto krousmatwn ths
-
+    //tha steilw to float ws string
+    sprintf(fl2s, "%.0f%", fres_arr[i]*100);
+    send_integer(wfd, &res_arr[i]); //hlikiakh kathgoria
+    send_string(wfd, fl2s, IO_PRM); //pososto krousmatwn ths ws string
   }
 }
 

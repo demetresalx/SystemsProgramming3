@@ -499,7 +499,7 @@ void get_answer_from_right_one(std::string quest, int fd, std::string * answer){
     *answer += std::to_string(number);
   }//telos if diseaseFrequency2
   else if(quest == "/topk-AgeRanges"){
-    ;;
+    read_and_present_topk(fd, answer);
   }//telos if topk-AgeRanges
   else if(quest == "/numPatientAdmissions2"){
     int number =0;
