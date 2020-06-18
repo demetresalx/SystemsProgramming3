@@ -71,6 +71,13 @@ void receive_and_print_file_summary(int , int );
 void reset_poll_parameters(struct pollfd *, int);
 //gia na tsekarw an teleiwsan ta pending connections se ena listening socket
 int check_if_will_block(int );
-
+//gia katharisma entolwn tou client kuriws
+int sanitize_command(std::string, std::string *);
+//gia apostolh queries apo client se server
+int send_command(int , std::string *, int , std::string );
+//gia na lamvanei apanthsh gia to erwthma numPatientAdmissions h discharges xwris xwra
+void read_and_present_num_adms_disch(int , std::string * );
+//gia na lamvanei apanthsh gia to erwthma topk
+void read_and_present_topk(int , std::string * );
 
 #endif

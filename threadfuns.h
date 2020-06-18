@@ -25,9 +25,11 @@ class tuple{
 public:
   int fd; //o file descriptor
   std::string type; //ti eidous fd einai
+  std::string address; //h ip poy prokyptei apo thn accept
   void operator = (tuple const &obj){
     fd = obj.fd;
     type = obj.type;
+    address = obj.address;
   }
 };
 
@@ -84,12 +86,14 @@ public:
   worker_db();
   ~worker_db();
   void add_worker(worker ); //prosthetei worker kanontas to swsto resize
-  void extract_worker(int ); //diabazei apo fd stoixeia enos worker
-  //gia eisodo-eksodo apo critical section.
+  void extract_worker(tuple ); //diabazei apo fd stoixeia enos worker
+  //gia eisodo-eksodo apo critical section:
   void cs_writer_start();
   void cs_writer_end();
   void cs_reader_start();
   void cs_reader_end();
+  //gia anazhthsh poiou worker prepei na psaksw
+  worker * search_worker_by_country(std::string );
 };
 
 extern synchro_stdout st ;//gia xrhsh apo threads
@@ -97,4 +101,12 @@ extern synchro_stdout st ;//gia xrhsh apo threads
 extern pool * circle;
 //gia metadata workers
 extern worker_db * work_db;
+//prepei na tous rwthsw olous h enan ?
+int must_ask_all(std::string );
+//gia prow8hsh erwthmatos sto worker apo server
+void ask_the_right_one(int , std::string , int *, std::string *);
+void ask_them_all(int , std::string , int **, int *, std::string *);
+//gia lhpsh apanthsewn apo worker se erwthma
+void get_answer_from_right_one(std::string, int , std::string *);
+void get_and_compose_answer_from_all(std::string , int *, int, std::string *);
 #endif

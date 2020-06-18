@@ -505,3 +505,173 @@ int check_if_will_block(int fd){
   else
     return 1; //nai tha blockare
 }
+
+//gia katharisma entolwn tou client kuriws
+int sanitize_command(std::string line, std::string *requ){
+  std::string const delims{ " \t\r\n" }; //delimiters einai ta: space,tab,comma kai carriage return. TELOS.
+  size_t beg, pos = 0;
+  int ind=0; //arithmos orismatwn + tou onomatos entolhs
+  while ((beg = line.find_first_not_of(delims, pos)) != std::string::npos){
+    pos = line.find_first_of(delims, beg + 1);
+    requ[ind] = line.substr(beg, pos - beg);
+    ind++;
+  }//telos while eksagwghs gnwrismatwn apo entolh
+  return ind;
+}
+
+//gia apostolh apo thread client se server
+int send_command(int sfd, std::string * requ, int ind, std::string comm){
+  if(requ[0] == "/diseaseFrequency"){
+    if(ind == 4){ //xwris to proairetiko country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      send_string(sfd, "/diseaseFrequency1", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+    else if(ind ==5){ //me orisma country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      send_string(sfd, "/diseaseFrequency2", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+  }//telos if diseaseFrequency
+  else if(requ[0] == "/searchPatientRecord"){
+    if(ind == 2){ //apodektos arithmos orismatwn
+      //steile to aithma
+      send_string(sfd, "/searchPatientRecord", IO_PRM);
+      send_string(sfd, &requ[1], IO_PRM); //steile to id pros anazhthsh
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+  }//telos if searchPatientRecord
+  else if(requ[0] == "/topk-AgeRanges"){
+    if(ind == 6){ //apodekto plh8os orismatwn
+      if((dates_compare(requ[4], requ[5]) != "smaller") && (dates_compare(requ[4], requ[5]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[4] == "-") || requ[5]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      int kapa = stoi(requ[1]); // h timh tou k
+      if((kapa < 1)||(kapa > 4)) //lathos timh k
+        {std::cout << "k must be integer in range [1, 4]\n";return -1;}
+      //steile to aithma
+      send_string(sfd, "/topk-AgeRanges", IO_PRM);//steile thn entolh
+      send_integer(sfd, &kapa);//steile k
+      send_string(sfd, &requ[2], IO_PRM);//steile country
+      send_string(sfd, &requ[3], IO_PRM);//steile disease
+      send_string(sfd, &requ[4], IO_PRM);//steile date1
+      send_string(sfd, &requ[5], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+  }//telos if topk
+  else if(requ[0] == "/numPatientAdmissions"){
+    if(ind == 4){ //xwris orisma country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      //steile aithma
+      send_string(sfd, "/numPatientAdmissions1", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+    else if(ind ==5){ //me orisma country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      send_string(sfd, "/numPatientAdmissions2", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+  }//telos if numPatientAdmissions
+  else if(requ[0] == "/numPatientDischarges"){
+    if(ind == 4){ //xwris country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n";return -1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      send_string(sfd, "/numPatientDischarges1", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+    else if(ind ==5){ //me country
+      if((dates_compare(requ[2], requ[3]) != "smaller") && (dates_compare(requ[2], requ[3]) != "equal") ) //kakws orismeno date
+        {std::cout << "Date1 must be earlier or equal to Date2 or bad date\n"; return-1;}
+      if((requ[2] == "-") || requ[3]== "-")
+        {std::cout << "Date1 and Date2 can't be - , it's supposed to be an INTERVAL\n";return -1;}
+      send_string(sfd, "/numPatientDischarges2", IO_PRM);//steile thn entolh
+      send_string(sfd, &requ[1], IO_PRM);//steile disease
+      send_string(sfd, &requ[2], IO_PRM);//steile date1
+      send_string(sfd, &requ[3], IO_PRM);//steile date2
+      send_string(sfd, &requ[4], IO_PRM);//steile country
+      send_string(sfd, &comm, IO_PRM);//steile kai to akribes erwthma na to ektupwsei o server
+      return 1;
+    }
+  }//telos if numPatientDischarges
+  return -1;
+}
+
+//pare kai kolla sto answer thn apanthsh gia numPatientAdmissions k discharges xwris xwra
+void read_and_present_num_adms_disch(int rfd, std::string * answ){
+  int nc =0;
+  int adms=0;
+  receive_integer(rfd, &nc);
+  std::string cname;
+  for(int i=0; i< nc; i++){
+    //pare onoma xwras
+    receive_string(rfd, &cname, IO_PRM);
+    //pare timh
+    receive_integer(rfd, &adms);
+    //std::cout << cname << " " << adms << "\n";
+    *answ += cname + " " + std::to_string(adms) + "\n";
+  }
+}
+
+//pare kai kolla sto answer thn apanthsh gia topk
+//GIA TA POSOSTA EVALA 0 DEKADIKA PSHFIA GIATI ETSI EINAI STHN EKFWNHSH
+void read_and_present_topk(int rfd, std::string * answer){
+  int fetched=0;
+  receive_integer(rfd, &fetched);
+  if(fetched ==0) //to paidi auto den exei tpt. mh sunexiseis
+    return;
+
+  int age_cat;
+  std::string pososto = ""; //moy to esteile ws string
+  //diabazw ta topk tou paidiou (mono ena paidi tha einai)
+  for(int i=0; i< fetched; i++){
+    receive_integer(rfd, &age_cat); //pare omada hlikias
+    receive_string(rfd, &pososto, sizeof(float)); //pare pososto
+    if(age_cat == 0)
+      *answer += "0-20: " + pososto + "%\n";
+    else if(age_cat == 1)
+      *answer += "21-40: " + pososto + "%\n";
+    else if(age_cat == 2)
+      *answer += "41-60: " + pososto + "%\n";
+    else
+      *answer += "60+: " + pososto + "%\n";
+  }
+}
