@@ -14,6 +14,7 @@
 //gia na kseroun poy na sunde8oun ta threads
 char servIP[256];
 int servPort =0;
+int numThreads=0;
 
 //gia na perimenei to main thread na diabastei h grammh apo to thread
 pthread_cond_t got_line_cnd = PTHREAD_COND_INITIALIZER;
@@ -25,6 +26,7 @@ pthread_mutex_t at_once_mtx = PTHREAD_MUTEX_INITIALIZER;
 bool at_once = false;
 //gia sygxronismo sto stdout
 synchro_stdot sto;
+
 
 void * threadcl(void * arln){
   std::string comm = *((std::string *) arln); //phra th grammh moy
@@ -62,10 +64,12 @@ void * threadcl(void * arln){
   receive_string(serv_sock, &answer_to_present, IO_PRM);
   //ektypwnw thread-safe sto stdout thn apanthsh poy phra ISWS KAI THN ERWTHSH
   sto.cs_start();
-  std::cout << comm << "\n";
+  std::cout << comm << " "<< pthread_self() <<"\n";
   std::cout << answer_to_present << "\n";
   sto.cs_end();
   close(serv_sock); //kleinw sundesh
+
+  //termatismos thread
   pthread_exit(NULL);
 }
 
@@ -73,7 +77,6 @@ void * threadcl(void * arln){
 int main(int argc, char ** argv){
   //GIA TIS PARAMETROUS APO ARGC
   char queryFile[256];
-  int numThreads=0;
   for (int i = 0; i < argc; i++){
     if (strcmp("-q", argv[i]) == 0){
       strcpy(queryFile, argv[i+1]); //akoloythei to onoma/monopati tou query file
@@ -101,12 +104,27 @@ int main(int argc, char ** argv){
   std::string line; //EPITREPETAI H STRING EIPAN STO PIAZZA
   int lines = 0;
   pthread_t * tids = NULL; //krataw ta pthreads
+  int threads_pack =0; //molis ftasw numthreads, perimenw na teleiwsoun gia na steilw ta numthreads epomena
   while (std::getline(infile, line)){ //read file
     //std::cout << line;
+    //de thelw na exw panw apo numThreads ongoin. An sumvei auto (teleiwmena trheads pollaplasio tou numthreads) perimene ta zwntana na teleiwsoun prin ftiakseis alla
+    if((threads_pack % numThreads) == 0){ //prepei na perimenw na teleiwsei h trexousa fournia apo numThreads prin ftiaksw nea numThreads
+      if(threads_pack > 0){
+        //TA KSEKINAW OLA MAZI
+        //std::cout << "Ola ok\n";
+        //threads_pack=0;
+        at_once = true;
+        pthread_cond_broadcast(&at_once_cnd);
+        //perimenw na teleiwsoun auta poy einai twra k trexoun
+        for(int i=threads_pack-numThreads; i<threads_pack; i++)
+          pthread_join(tids[i], NULL);
+      }
+    }//telos if gia an teleiwse h prwth fournia
     //stelnw th grammh sto thread poy ftiaxnw kai kanei ekei to sanitizing/elegxo
     tids = (pthread_t *) realloc(tids, (lines+1)*sizeof(pthread_t)); //gia neo thread proekteinw ton pinaka
     pthread_create( &(tids[lines]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
     lines++;
+    threads_pack++;
     while(!got_line)
       pthread_cond_wait(&got_line_cnd, &got_line_mtx);
     got_line = false;

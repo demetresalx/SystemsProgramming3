@@ -36,13 +36,13 @@ $(EXEC_CLIENT): $(OBJECTS_COMMON) $(OBJECTS_CLIENT)
 	$(CC) $(CFLAGS) $< -o $@
 
 runserver:
-	./$(EXEC_SERVER) -q 7777 -s 4444 -w 5 -b 7
+	./$(EXEC_SERVER) -q 7777 -s 4444 -w 50 -b 7
 
 runmaster:
-	./$(EXEC_MASTER) -w 3 -b 128 -s 192.168.1.1 -p 4444 -i ../inputs/ass3/input_dir
+	./$(EXEC_MASTER) -w 5 -b 128 -s 192.168.1.1 -p 4444 -i ../inputs/ass3/input_dir
 
 runclient:
-	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile.txt -w 3 -sip 192.168.1.1 -sp 7777
+	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile.txt -w 61 -sip 192.168.1.1 -sp 7777
 
 clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)
