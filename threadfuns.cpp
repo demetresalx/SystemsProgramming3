@@ -447,6 +447,11 @@ void ask_the_right_one(int fd, std::string quest, int * wfd, std::string * q_to_
   struct sockaddr_in work_address;
   work_db->cs_reader_start(); //critical. prosexei na mhn enhmerwnei kapoios th domh ekeinh thn wra
   right_one = work_db->search_worker_by_country(country); //ton briskei
+  if(right_one == NULL){ //DEN YPARXEI h xwra, prepei
+    work_db->cs_reader_end();
+    *wfd = -5;
+    return;
+  }
   //kratame tis plhrofories poy xreiazontai gia connection mazi tou
   work_address.sin_family = AF_INET;
   work_address.sin_addr.s_addr = inet_addr(right_one->address.c_str());
@@ -493,6 +498,8 @@ void ask_the_right_one(int fd, std::string quest, int * wfd, std::string * q_to_
 
 //pairnei thn apanthsh apo auton ton enan
 void get_answer_from_right_one(std::string quest, int fd, std::string * answer){
+  if(fd < 0) //den yparxei h xwra, enhmerwnw oti den yparxei
+    {*answer += "Database does NOT have this country."; return;}
   if(quest == "/diseaseFrequency2"){
     int number =0;
     receive_integer(fd, &number); //pare ton arithmo

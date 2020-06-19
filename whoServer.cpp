@@ -72,7 +72,7 @@ void * thread_basis(void * ar){
         st.cs_end();
         //stelnw apanthsh ston client
         send_string(got.fd, &answer, IO_PRM);
-      }
+      }//telos if prepei na rwthsw enan
     }//telos if query sundesh
     close(got.fd); //to eksuphrethsa, to kleinw
   }//telos while atermonhs??
