@@ -64,7 +64,7 @@ void * threadcl(void * arln){
   receive_string(serv_sock, &answer_to_present, IO_PRM);
   //ektypwnw thread-safe sto stdout thn apanthsh poy phra ISWS KAI THN ERWTHSH
   sto.cs_start();
-  std::cout << comm << " "<< pthread_self() <<"\n";
+  std::cout << comm <<"\n";
   std::cout << answer_to_present << "\n";
   sto.cs_end();
   close(serv_sock); //kleinw sundesh
@@ -106,8 +106,8 @@ int main(int argc, char ** argv){
   int maxlines = get_lines_ofile(queryFile); //to xreiazomai gia thn akraia periptwsh
   //NULLpthread_t * tids = new pthread_t[maxlines]; //krataw ta pthreads
   pthread_t * tids = new pthread_t[numThreads];
+  bool valid_tid[numThreads] = {false}; //gia na kserw se mia join an einai valid to id tou thread
   int threads_pack =0; //molis ftasw numthreads, perimenw na teleiwsoun gia na steilw ta numthreads epomena
-  int final_count = 0;
   while (std::getline(infile, line)){ //read file
     //std::cout << line;
     //de thelw na exw panw apo numThreads ongoing. An sumvei auto perimene ta zwntana na teleiwsoun prin ftiakseis alla numThreads
@@ -119,29 +119,36 @@ int main(int argc, char ** argv){
         //perimenw na teleiwsoun auta poy einai twra k trexoun
         for(int i=0; i<threads_pack; i++)
           {pthread_join(tids[i], NULL);}
-        if(numThreads > maxlines-lines)
-          {delete[] tids; tids = new pthread_t[maxlines-lines];final_count= maxlines-lines;}
+        //ean to arxeio prokeitai na teleiwsei kai einai mh pollaplasio tou numthreads
+        if(numThreads > maxlines-lines){
+          delete[] tids;
+          tids = new pthread_t[numThreads];
+          for(int i=maxlines-lines; i<numThreads; i++) //oi extra theseis tou pinaka den einai valid. gia na mhn kanw kako join
+            valid_tid[i] = false;
+        }
         else
-          {delete[] tids; tids = new pthread_t[numThreads];final_count = numThreads;}
-        threads_pack=0;
+          {delete[] tids; tids = new pthread_t[numThreads];} //pame gia thn epomenh numthreads-ada
+        threads_pack=0; //arxizei h nea numthreads-ada
       }
     }//telos if gia an teleiwse h prwth fournia
     //stelnw th grammh sto thread poy ftiaxnw kai kanei ekei to sanitizing/elegxo
     pthread_create( &(tids[threads_pack]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
-    //pthread_create( &(tids[lines]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
+    valid_tid[threads_pack] = true; //pragmatiko thread
     lines++;
     threads_pack++;
+    //perimenw to thread na parei th grammh tou
     while(!got_line)
       pthread_cond_wait(&got_line_cnd, &got_line_mtx);
     got_line = false;
   }//telos while read file
-  //TA KSEKINAW OLA MAZI
+  //Ksekinaw ta threads gia tis grammes mh pollaplasia tou numthreads poy einai h teleutaia loypa
   at_once = true;
   pthread_cond_broadcast(&at_once_cnd);
-
   //wait for threads to finish
-  for(int i=0; i<final_count; i++)
-    {pthread_join(tids[i], NULL);}
+  for(int i=0; i<numThreads; i++){
+    if(valid_tid[i]) //na mhn riskarw na kanw join se kati poy den einai thread
+      pthread_join(tids[i], NULL);
+  }
 
   //free(tids);
   delete[] tids;
