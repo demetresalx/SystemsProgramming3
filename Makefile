@@ -36,13 +36,13 @@ $(EXEC_CLIENT): $(OBJECTS_COMMON) $(OBJECTS_CLIENT)
 	$(CC) $(CFLAGS) $< -o $@
 
 runserver:
-	./$(EXEC_SERVER) -q 7777 -s 4444 -w 50 -b 7
+	./$(EXEC_SERVER) -q 7777 -s 4444 -w 5 -b 77
 
 runmaster:
 	./$(EXEC_MASTER) -w 5 -b 128 -s 192.168.1.1 -p 4444 -i ../inputs/ass3/input_dir
 
 runclient:
-	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile.txt -w 61 -sip 192.168.1.1 -sp 7777
+	./$(EXEC_CLIENT) -q ../inputs/ass3/queryfile.txt -w 3 -sip 192.168.1.1 -sp 7777
 
 clean:
 	rm -f $(OBJECTS_MASTER) $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_COMMON) $(EXEC_MASTER) $(EXEC_SERVER) $(EXEC_CLIENT)
@@ -56,4 +56,4 @@ clean:
 #valgrind --leak-check=full ./whoServer -q 7777 -s 4056 -w 5 -b 6
 
 #gia client programma
-#./whoClient -q ../inputs/ass3/queryfile.txt -w 3 -sip 192.168.1.1 -sp 7777
+#valgrind --leak-check=full ./whoClient -q ../inputs/ass3/queryfilebig.txt -w 33 -sip 192.168.1.1 -sp 7777

@@ -1,4 +1,5 @@
 #include "client_threads.h"
+#include <fstream>
 #include <iostream>
 
 //SYNCHRO_STDOUT
@@ -27,4 +28,14 @@ void synchro_stdot::cs_end(){
   user=false;
   pthread_mutex_unlock(&lock);
   pthread_cond_broadcast(&in_use);
+}
+
+//gia na xeirizomai kapoia edge cases https://stackoverflow.com/questions/19140148/c-get-total-file-line-number
+int get_lines_ofile(char * filename ){
+  std::ifstream f(filename);
+  std::string line;
+  int i;
+  for (i = 0; std::getline(f, line); ++i)
+      ;
+  return i;
 }

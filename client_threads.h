@@ -17,4 +17,6 @@ public:
   void cs_end(); //telos critical section sto stdout
 };
 
+int get_lines_ofile(char * ); //gia na xeirizomai kapoia edge cases
+
 #endif

@@ -103,26 +103,32 @@ int main(int argc, char ** argv){
   std::ifstream infile(queryFile); //diabasma apo tis grammes tou arxeiou
   std::string line; //EPITREPETAI H STRING EIPAN STO PIAZZA
   int lines = 0;
-  pthread_t * tids = NULL; //krataw ta pthreads
+  int maxlines = get_lines_ofile(queryFile); //to xreiazomai gia thn akraia periptwsh
+  //NULLpthread_t * tids = new pthread_t[maxlines]; //krataw ta pthreads
+  pthread_t * tids = new pthread_t[numThreads];
   int threads_pack =0; //molis ftasw numthreads, perimenw na teleiwsoun gia na steilw ta numthreads epomena
+  int final_count = 0;
   while (std::getline(infile, line)){ //read file
     //std::cout << line;
-    //de thelw na exw panw apo numThreads ongoin. An sumvei auto (teleiwmena trheads pollaplasio tou numthreads) perimene ta zwntana na teleiwsoun prin ftiakseis alla
-    if((threads_pack % numThreads) == 0){ //prepei na perimenw na teleiwsei h trexousa fournia apo numThreads prin ftiaksw nea numThreads
+    //de thelw na exw panw apo numThreads ongoing. An sumvei auto perimene ta zwntana na teleiwsoun prin ftiakseis alla numThreads
+    if((threads_pack == numThreads)){ //prepei na perimenw na teleiwsei h trexousa fournia apo numThreads prin ftiaksw nea numThreads
       if(threads_pack > 0){
         //TA KSEKINAW OLA MAZI
-        //std::cout << "Ola ok\n";
-        //threads_pack=0;
         at_once = true;
         pthread_cond_broadcast(&at_once_cnd);
         //perimenw na teleiwsoun auta poy einai twra k trexoun
-        for(int i=threads_pack-numThreads; i<threads_pack; i++)
-          pthread_join(tids[i], NULL);
+        for(int i=0; i<threads_pack; i++)
+          {pthread_join(tids[i], NULL);}
+        if(numThreads > maxlines-lines)
+          {delete[] tids; tids = new pthread_t[maxlines-lines];final_count= maxlines-lines;}
+        else
+          {delete[] tids; tids = new pthread_t[numThreads];final_count = numThreads;}
+        threads_pack=0;
       }
     }//telos if gia an teleiwse h prwth fournia
     //stelnw th grammh sto thread poy ftiaxnw kai kanei ekei to sanitizing/elegxo
-    tids = (pthread_t *) realloc(tids, (lines+1)*sizeof(pthread_t)); //gia neo thread proekteinw ton pinaka
-    pthread_create( &(tids[lines]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
+    pthread_create( &(tids[threads_pack]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
+    //pthread_create( &(tids[lines]), NULL, threadcl, &line) ; //ta ftiaxnw kai ta bazw na pane sth vasikh tous sunarthsh
     lines++;
     threads_pack++;
     while(!got_line)
@@ -134,9 +140,10 @@ int main(int argc, char ** argv){
   pthread_cond_broadcast(&at_once_cnd);
 
   //wait for threads to finish
-  for(int i=0; i<lines; i++)
-    pthread_join(tids[i], NULL);
+  for(int i=0; i<final_count; i++)
+    {pthread_join(tids[i], NULL);}
 
-  free(tids);
+  //free(tids);
+  delete[] tids;
   return 0;
 }
