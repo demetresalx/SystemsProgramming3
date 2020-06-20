@@ -106,40 +106,6 @@ int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, i
   memset(already_read, 0, sizeof(already_read)); // arxika ola adiabasta
   memset(already_ok, 0, sizeof(already_read)); // arxika ola adiabasta
 
-  //SUMMARIES DE THA EKTYPWNEI O MASTER, KRATAW KWDIKA GIA SERVER??
-  /*
-  while(kids_read < wnum){
-    //arxikopoihsh se kathe loupa gia thn poll
-      reset_poll_parameters(pipe_rfds, wnum);
-
-    int rc = poll(pipe_rfds, wnum, 2000); //kanw poll
-    if(rc == 0)
-      {;;}
-    else{//tsekarw poioi einai etoimoi
-      for(int i=0; i<wnum; i++){
-        //an einai etoimo kai den to exw ksanadiabasei
-        if(pipe_rfds[i].revents == POLLIN){
-          if(already_read[i] == 0){ //pame gia ta summaries
-            for(int j=0; j< dirs_per_wrk[i]; j++){
-              int nfls =0;
-              read(pipe_rfds[i].fd, &nfls, sizeof(int));
-              for(int k=0; k<nfls; k++)
-                receive_and_print_file_summary(pipe_rfds[i].fd, bsize); //ektupwse to summary
-            }
-            already_read[i] = 1;
-          }
-          //tsekarw kai to oti to paidi teleiwse genika
-          if(already_ok[i] == 0){
-            receive_string(pipe_rfds[i].fd, &tool, bsize);
-            if(tool == "ok") //teleiwse to parsing to paidi
-              {kids_read++; already_ok[i] = 1;}
-          }
-
-        } //telos elegxou diathesimothtas fd
-      }//telos for gia paidia
-    } //telos else gia timeout ths poll
-  }//telos while
-  */
 
   //GIA XEIRISMO SIGCHLD
   signal(SIGCHLD, chld_hdl);
@@ -202,46 +168,4 @@ int administrate(char * in_dir, int wnum, int bsize, std::string * pipe_names, i
 
 //telos
   return 0;
-}
-
-//pare kai parousiase ta apotelesmata topk apo ena pipe paidiou
-//GIA THN EKTYPWSH POSOSTWN EVALA 0 DEKADIKA PSHFIA GIATI ETSI EINAI STHN EKFWNHSH
-void read_and_present_topk(int rfd){
-  int fetched=0;
-  read(rfd, &fetched, sizeof(int));
-  if(fetched ==0) //to paidi auto den exei tpt. mh sunexiseis
-    return;
-
-  int age_cat;
-  float pososto;
-  std::string onoma_kat = "";
-  //diabazw ta topk tou paidiou (mono ena paidi tha einai)
-  for(int i=0; i< fetched; i++){
-    read(rfd, &age_cat, sizeof(int)); //pare omada hlikias
-    read(rfd, &pososto, sizeof(float)); //pare pososto
-    if(age_cat == 0)
-      printf("0-20: %.0f%\n",pososto*100);
-    else if(age_cat == 1)
-      printf("21-40: %.0f%\n",pososto*100);
-    else if(age_cat == 2)
-      printf("41-60: %.0f%\n",pososto*100);
-    else
-      printf("60+: %.0f%\n",pososto*100);
-  }
-}
-
-//pare kai parousiase ta apotelesmata topk apo ena pipe paidiou
-void read_and_present_num_adms_disch(int rfd, int bsize){
-  int nc =0;
-  int adms=0;
-  read(rfd, &nc, sizeof(int));
-  std::string cname;
-  for(int i=0; i< nc; i++){
-    //pare onoma xwras
-    receive_string(rfd, &cname, bsize);
-    //pare timh
-    read(rfd, &adms, sizeof(int));
-    std::cout << cname << " " << adms << "\n";
-  }
-
 }

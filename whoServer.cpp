@@ -116,7 +116,7 @@ int main(int argc, char ** argv){
     numThreads = 1;
   //ftiaxnw ton kykliko buffer. EINAI TO POOL TWN DIAFANEIWN TOU NTOULA
   circle = new pool(bufferSize); //to arxikopoiei me to dothen megethos
-  work_db = new worker_db; //to arxikopoiei
+  work_db = new worker_db; //to arxikopoiei. klash me metadata twn workers
   //ftiaxnw numThreads nhmata
   pthread_t * tids; //krataw ta pthreads
   tids = new pthread_t[numThreads];
@@ -133,7 +133,7 @@ int main(int argc, char ** argv){
   int listen_queries = socket(AF_INET, SOCK_STREAM, 0);
   setsockopt(listen_queries, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
   setsockopt(listen_queries, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
-  struct sockaddr_in my_addr, peer_addr;
+  struct sockaddr_in my_addr, peer_addr; //to 2o einai gia thn accept na krataw incoming ip
   my_addr.sin_family = AF_INET;
   my_addr.sin_addr.s_addr = INADDR_ANY;
   my_addr.sin_port = htons(statisticsPortNum);
@@ -144,7 +144,7 @@ int main(int argc, char ** argv){
   //antistoixizw to allo socket sthn porta gia queries
   if(bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr)) <0)
     {perror("Bind 2:"); return -1;}
-  //listen
+  //listen, mexri 500 an kai sto piazza exei eipw8ei oti dhmiourgei problhmata to terastio threadsnum. oxi vanausothtes parakalw
   if(listen(listen_stats, 500) < 0)
     {perror("Listen 1:"); return -1;}
   if(listen(listen_queries, 500) <0)
@@ -164,7 +164,7 @@ int main(int argc, char ** argv){
     if(quitflag >0){ //fagame sigint/quit telos
       break;
     }
-
+    //leitourgia poll apo 2h askhsh
     int rc = poll(listenfds, 2, 2000);
     if(rc == 0) //timeout
       {;;}
@@ -172,7 +172,7 @@ int main(int argc, char ** argv){
         for(int i=0; i<2; i++){
           if(listenfds[i].revents == POLLIN){ //exoume sundesh edw
             //elegxw poio apo ta 2 einai gia na to xeiristw analoga
-            if(listenfds[i].fd == listen_stats){ //yparxei sundesh gia statistics. proceed with reading/printing tous
+            if(listenfds[i].fd == listen_stats){ //yparxei sundesh gia statistics. tha to valw na to diabasoun/ektypwsoun ta threads
               //pame na piasoume twra ola ta incoming connections gia statistics poy einai pending edw
               do{
                 accepted_fd = accept(listen_stats, (struct sockaddr*) &peer_addr, &addr_size);
@@ -184,20 +184,7 @@ int main(int argc, char ** argv){
                 //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
                 circle->place(newfd);
                 pthread_cond_broadcast(&(circle->nonempty));
-                //char ip[INET_ADDRSTRLEN];
-                //inet_ntop(AF_INET, &(peer_addr.sin_addr), ip, INET_ADDRSTRLEN); //pare address tou worker
-                //std::cout << "sto " << ip << "\n"; //ISWS THELEI NA TOU STELNEI TO IP TOU TO WORKER
-                //work_db->extract_worker(accepted_fd);
-                //pame na paroume ta summary statistics apo edw
-                /*int ndirs=0;
-                receive_integer(accepted_fd, &ndirs);
-                for(int j=0; j<ndirs; j++){
-                  int nfls =0;
-                  receive_integer(accepted_fd, &nfls);
-                  //std::cout << "tha diabasw size " << ndirs << " " << nfls << "\n";
-                  for(int k=0; k<nfls; k++)
-                    receive_and_print_file_summary(accepted_fd, IO_PRM); //ektupwse to summary
-                }*/
+                //checkarw an yparxei kai allh pending sundesh se auto to auti. an oxi feugoume
                 if(check_if_will_block(listen_stats)) //an tis phrame oles tis sundeseis
                   {break;}
               }while(accepted_fd > 0);
@@ -212,7 +199,7 @@ int main(int argc, char ** argv){
                 //topo8ethse ton file descriptor ston kykliko buffer gia na asxolh8oun ta threads
                 circle->place(newfd);
                 pthread_cond_broadcast(&(circle->nonempty));
-
+                //checkarw an yparxei kai allh pending sundesh se auto to auti. an oxi feugoume
                 if(check_if_will_block(listen_queries)) //an tis phrame oles tis sundeseis
                   {break;}
               }while(accepted_fd > 0);
@@ -223,19 +210,21 @@ int main(int argc, char ** argv){
 
   }//telos while sundesewn
 
+  /*
   for(int i=0; i< work_db->n_workers; i++){
     std::cout << "eimai o " <<  work_db->workers[i].address << ntohs( work_db->workers[i].port) << "\n";
     for(int j=0; j<  work_db->workers[i].n_countries; j++)
       std::cout <<  work_db->workers[i].countries[j] << "\n";
   }
+  */
 
-
-  //wait for threads to terminate
+  //EPITHDES SXOLIASMENO. DEN THA KANOYME WAIT TA THREADS otan fame CTRL-C
+  //giati einai se mia while(1) opws eipw8hke piazza ara de mporoyn na stamathsoyn me fusiologiko tropo
   //for(int i=0; i<numThreads; i++)
     //pthread_join(tids[i], NULL);
   delete[] tids; //svhse axrhsto pleon pinaka
   delete circle; //destroy kykliko buffer epishs
   delete work_db; //destroy metadata workers
-  //destroy all mutexes and condition vars
+  //destroy all mutexes and condition vars, ginetai me tous destructors twn klasewn p kalountai edw sto exit
   return 0;
 }

@@ -176,24 +176,9 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
         perror("\nConnection Failed:");
         return -1;
     }
-    //grafw port kai ip poy prepei ISWS PREPEI KAI IP
+    //grafw port pou prepei na steilw
     write(serv_sock, &port_to_send, sizeof(port_to_send));
-    //std::cout << "egrapsa to " << ntohs(port_to_send) << "\n";
-    //grafw IP
-    /*
-    char hostbuffer[256];
-    char *IPbuffer;
-    struct hostent *host_entry;
-    int hostname;
-    // To retrieve hostname
-    hostname = gethostname(hostbuffer, sizeof(hostbuffer));
-    // To retrieve host information
-    host_entry = gethostbyname(hostbuffer);
-    IPbuffer = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
-    //printf("Hostname: %s\n", hostbuffer);
-    //printf("Host IP: %s\n", IPbuffer);
-    send_string(serv_sock, IPbuffer, bsize); //stelnw thn ip moy
-    */
+
     //tha grapsw kai tis xwres poy xeirizomai
     send_integer(serv_sock, &n_dirs); //steile poses xwres
     for(int i=0; i< n_dirs; i++){
@@ -211,13 +196,12 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
       //std::cout << "\n";
     }
   }
-  //send_string(serv_sock, "melitzana!" ,bsize); //dokimh
 
 
     for(int i=0; i<n_dirs; i++)
       delete dsums[i]; //ME DESTRUCTORS THS C++ OLH H DESMEUMENH KATHARIZEII, des ~directory_summary
     //enhmerwnw gonio oti teleiwsa to parsing
-    send_string(write_fd, "ok", bsize);
+    send_string(write_fd, "ok", bsize); //enhmerwnw patera gia na mpei sth sxetikh loypa na perimenei deaths ktl
 
   strcpy(sbuf, "");
   char sbuf2[200];

@@ -9,14 +9,6 @@
 #include "utils.h"
 
 //sunarthseis twn threads!
-//dokimastikh
-void hello(){
-  st.cs_start();
-  std::cout << "Quanmiong\n i am thread " << std::to_string(pthread_self()) << "\n";
-  //st.print_safe(tprnt.c_str());
-  st.cs_end();
-  //std::cout << tprnt;
-}
 
 //GIA KYKLIKO BUFFER DIAFANEIWN KOU. NTOULA
 //constructor p kanei initialize

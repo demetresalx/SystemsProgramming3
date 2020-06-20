@@ -1,5 +1,5 @@
 CC=g++  -std=c++11
-CFLAGS=-c -Wpedantic #-Ofast
+CFLAGS=-c -w -Ofast
 LDFLAGS=
 SOURCES_COMMON=utils.cpp record.cpp
 SOURCES_MASTER=master.cpp master_boss.cpp worker.cpp record_HT.cpp cdHashTable.cpp topk.cpp bbst.cpp
@@ -49,11 +49,10 @@ clean:
 
 #gia master programma:
 #./master -w 3 -b 128 -s 127.0.0.1 -p 4444 -i ../inputs/ass3/input_dir
-#valgrind --leak-check=full ./master -w 3 -b 128 -s serverIP -p 4056 -i ../inputs/ass3/input_dir
+
 
 #gia server programma
 #./whoServer -q 7777 -s 4444 -w 5 -b 6
-#valgrind --leak-check=full ./whoServer -q 7777 -s 4056 -w 5 -b 6
 
 #gia client programma
-#valgrind --leak-check=full ./whoClient -q ../inputs/ass3/queryfilebig.txt -w 33 -sip 192.168.1.1 -sp 7777
+#./whoClient -q ../inputs/ass3/queryfile.txt -w 10 -sip 192.168.1.1 -sp 7777

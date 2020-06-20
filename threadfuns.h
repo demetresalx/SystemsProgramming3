@@ -5,7 +5,6 @@
 #include <string>
 
 //sunarthseis poy tha xrhsimopoioyn ta threads
-void hello(); //dokimastikh
 
 //KLASH GIA TO SUGXRONISMO TOU STDOUT poy zhteitai
 class synchro_stdout{
@@ -26,7 +25,7 @@ public:
   int fd; //o file descriptor
   std::string type; //ti eidous fd einai
   std::string address; //h ip poy prokyptei apo thn accept
-  void operator = (tuple const &obj){
+  void operator = (tuple const &obj){ //operator overloading gia eukolia
     fd = obj.fd;
     type = obj.type;
     address = obj.address;
