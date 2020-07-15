@@ -145,9 +145,9 @@ int main(int argc, char ** argv){
   if(bind(listen_queries, (struct sockaddr*) &my_addr, sizeof(my_addr)) <0)
     {perror("Bind 2:"); return -1;}
   //listen, mexri 500 an kai sto piazza exei eipw8ei oti dhmiourgei problhmata to terastio threadsnum. oxi vanausothtes parakalw
-  if(listen(listen_stats, 1500) < 0)
+  if(listen(listen_stats, 100) < 0)
     {perror("Listen 1:"); return -1;}
-  if(listen(listen_queries, 1500) <0)
+  if(listen(listen_queries, 100) <0)
     {perror("Listen 1:"); return -1;}
   socklen_t addr_size;
   addr_size = sizeof(struct sockaddr_in);
@@ -207,7 +207,8 @@ int main(int argc, char ** argv){
           } //telos elegxou diathesimothtas fd
         }//telos for gia ta 2 autia
     } //telos else gia timeout ths poll
-
+	listen(listen_stats, 100);
+	listen(listen_queries, 100);
   }//telos while sundesewn
 
   /*

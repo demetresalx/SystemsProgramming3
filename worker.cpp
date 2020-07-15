@@ -213,10 +213,9 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
   int failed = 0; //apotuxhmena erwthmata
   int accepted_fd;
   socklen_t addr_size = sizeof(struct sockaddr_in);
-  listen(sock, 1500);
+  listen(sock, 100);
   std::cout << "Listening for queries!!\n";
   while(1){
-
     if(quitflag1 > 0) //fagame SIGINT/QUIT
       {/*std::cout << "ciao\n";*/break;}
     //dexomai mia sundesh gia queries
@@ -374,6 +373,7 @@ int work(char * read_pipe, char * write_pipe, int bsize, int dosumms){
     if(quitflag1 > 0) //fagame SIGINT/QUIT
       {/*std::cout << "ciao\n";*/break;}
     close(accepted_fd);
+	listen(sock, 100);
 
   }
 
